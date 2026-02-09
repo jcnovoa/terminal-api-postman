@@ -1,0 +1,2095 @@
+{
+  "name": "Terminal API",
+  "version": "1.0",
+  "baseUrl": "https://api.terminal.co",
+  "categories": [
+    {
+      "name": "Authentication",
+      "description": "",
+      "endpoints": [
+        {
+          "name": "Public Token Exchange",
+          "description": "Exchange the `publicToken` returned by our hosted authentication flow for a long lived connection token that will be used when requesting data from a customer's TSP.",
+          "method": "POST",
+          "path": "/public-token/exchange",
+          "parameters": {
+            "query": [],
+            "path": [],
+            "headers": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "description": ""
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "description": ""
+              }
+            ]
+          },
+          "body": {
+            "mode": "raw",
+            "raw": "{\n    \"publicToken\": \"INSERT_PUBLIC_TOKEN\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          },
+          "responses": []
+        }
+      ]
+    },
+    {
+      "name": "Connections",
+      "description": "",
+      "endpoints": [
+        {
+          "name": "List All Connections",
+          "description": "List all of the connections you have for your application. Connections represent the authenticated access you have to your customer's TSP data.",
+          "method": "GET",
+          "path": "/connections",
+          "parameters": {
+            "query": [
+              {
+                "key": "cursor",
+                "description": "Pagination cursor to start requests from",
+                "required": false,
+                "example": "{{nextCursor}}"
+              },
+              {
+                "key": "limit",
+                "description": "The maximum number of results to return in a page.",
+                "required": false,
+                "example": "1"
+              },
+              {
+                "key": "externalId",
+                "description": "",
+                "required": false,
+                "example": "123"
+              },
+              {
+                "key": "dotNumber",
+                "description": "",
+                "required": false,
+                "example": "123"
+              },
+              {
+                "key": "tag",
+                "description": "Filter connections by tag",
+                "required": true,
+                "example": "dolore proident"
+              },
+              {
+                "key": "updatedAfter",
+                "description": "Filter connections that were last updated on or after a given time.",
+                "required": true,
+                "example": "2021-01-06T03:24:53.000Z"
+              },
+              {
+                "key": "updatedBefore",
+                "description": "Filter connections that were last updated on or before a given time.",
+                "required": true,
+                "example": "2021-01-06T03:24:53.000Z"
+              },
+              {
+                "key": "status",
+                "description": "Filter connections by status",
+                "required": true,
+                "example": "connected"
+              },
+              {
+                "key": "provider",
+                "description": "Filter connections by provider",
+                "required": true,
+                "example": "geotab"
+              }
+            ],
+            "path": [],
+            "headers": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "description": ""
+              }
+            ]
+          },
+          "body": null,
+          "responses": []
+        },
+        {
+          "name": "Get Current Connection",
+          "description": "Get the details of the current active connection. The current connection is derived from the provided connection token.",
+          "method": "GET",
+          "path": "/connections/current",
+          "parameters": {
+            "query": [],
+            "path": [],
+            "headers": [
+              {
+                "key": "Connection-Token",
+                "value": "{{connectionToken}}",
+                "description": {
+                  "content": "(Required) The token returned when a user authenticated their account. This authorizes access to a specific account.",
+                  "type": "text/plain"
+                }
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "description": ""
+              }
+            ]
+          },
+          "body": null,
+          "responses": []
+        },
+        {
+          "name": "Update Current Connection",
+          "description": "Update the details of the current active connection. The current connection is derived from the provided connection token.",
+          "method": "PATCH",
+          "path": "/connections/current",
+          "parameters": {
+            "query": [],
+            "path": [],
+            "headers": [
+              {
+                "key": "Connection-Token",
+                "value": "{{connectionToken}}",
+                "description": {
+                  "content": "(Required) The token returned when a user authenticated their account. This authorizes access to a specific account.",
+                  "type": "text/plain"
+                }
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "description": ""
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "description": ""
+              }
+            ]
+          },
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"status\": \"deserunt aliquip\",\n  \"options\": {\n    \"ingestHistoryFromSourceSystem\": true\n  },\n  \"company\": {\n    \"name\": \"Acme Inc.\",\n    \"dotNumbers\": [\n      \"Excepteur do ut\",\n      \"id pariatur cupidatat est enim\"\n    ]\n  },\n  \"externalId\": \"aute nisi commodo\",\n  \"syncMode\": \"automatic\",\n  \"tags\": [\n    \"et nisi ipsum commodo\",\n    \"sunt consectetur\"\n  ],\n  \"filters\": {\n    \"vehicles\": {\n      \"status\": \"inactive\",\n      \"excludeIds\": [\n        \"vcl_01D8ZQFGHVJ858NBF2Q7DV9MNC\",\n        \"vcl_01D8ZQFGHVJ858NBF2Q7DV9MNC\"\n      ],\n      \"includeIds\": [\n        \"vcl_01D8ZQFGHVJ858NBF2Q7DV9MNC\",\n        \"vcl_01D8ZQFGHVJ858NBF2Q7DV9MNC\"\n      ]\n    },\n    \"drivers\": {\n      \"status\": \"active\",\n      \"excludeIds\": [\n        \"drv_01D8ZQFGHVJ858NBF2Q7DV9MNC\",\n        \"drv_01D8ZQFGHVJ858NBF2Q7DV9MNC\"\n      ],\n      \"includeIds\": [\n        \"drv_01D8ZQFGHVJ858NBF2Q7DV9MNC\",\n        \"drv_01D8ZQFGHVJ858NBF2Q7DV9MNC\"\n      ]\n    }\n  }\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          },
+          "responses": []
+        }
+      ]
+    },
+    {
+      "name": "Data Management",
+      "description": "",
+      "endpoints": [
+        {
+          "name": "Request Sync",
+          "description": "Manually request to sync the current connections data.\n\nBy default, Terminal will sync all connections where `syncMode = automatic` on a regular cadence. For customers that may not need a fleet's data to be kept up to date and want to reduce their active tracked trucks, you can set `syncMode = manual` and invoke this endpoint when you want to sync data.\n\nIf you're wondering if this is relevent to your use case then feel free to reach out and we'd be happy to assist.",
+          "method": "POST",
+          "path": "/syncs",
+          "parameters": {
+            "query": [],
+            "path": [],
+            "headers": [
+              {
+                "key": "Connection-Token",
+                "value": "{{connectionToken}}",
+                "description": {
+                  "content": "(Required) The token returned when a user authenticated their account. This authorizes access to a specific account.",
+                  "type": "text/plain"
+                }
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "description": ""
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "description": ""
+              }
+            ]
+          },
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"days\": 7\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          },
+          "responses": []
+        },
+        {
+          "name": "List Sync History",
+          "description": "List a log of all batch sync jobs for the current connection.",
+          "method": "GET",
+          "path": "/syncs",
+          "parameters": {
+            "query": [
+              {
+                "key": "limit",
+                "description": "The maximum number of results to return in a page.",
+                "required": false,
+                "example": "1"
+              },
+              {
+                "key": "cursor",
+                "description": "Pagination cursor to start requests from",
+                "required": false,
+                "example": "{{nextCursor}}"
+              },
+              {
+                "key": "status",
+                "description": "",
+                "required": false,
+                "example": "in_progress"
+              },
+              {
+                "key": "expand",
+                "description": "Expand related resources in the response to reduce requests.",
+                "required": false,
+                "example": ""
+              }
+            ],
+            "path": [],
+            "headers": [
+              {
+                "key": "Connection-Token",
+                "value": "{{connectionToken}}",
+                "description": {
+                  "content": "(Required) The token returned when a user authenticated their account. This authorizes access to a specific account.",
+                  "type": "text/plain"
+                }
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "description": ""
+              }
+            ]
+          },
+          "body": null,
+          "responses": []
+        },
+        {
+          "name": "Get Sync Job Status",
+          "description": "Get the status of a sync job by ID.",
+          "method": "GET",
+          "path": "/syncs/:id",
+          "parameters": {
+            "query": [
+              {
+                "key": "expand",
+                "description": "Expand related resources in the response to reduce requests.",
+                "required": false,
+                "example": ""
+              }
+            ],
+            "path": [
+              {
+                "key": "id",
+                "description": {
+                  "content": "(Required) ",
+                  "type": "text/plain"
+                },
+                "example": "{{syncId}}"
+              }
+            ],
+            "headers": [
+              {
+                "key": "Connection-Token",
+                "value": "{{connectionToken}}",
+                "description": {
+                  "content": "(Required) The token returned when a user authenticated their account. This authorizes access to a specific account.",
+                  "type": "text/plain"
+                }
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "description": ""
+              }
+            ]
+          },
+          "body": null,
+          "responses": []
+        },
+        {
+          "name": "Retry Sync",
+          "description": "Retry a failed sync job with the same parameters. This is useful for retrying syncs that failed due to temporary issues.",
+          "method": "POST",
+          "path": "/syncs/:id/retry",
+          "parameters": {
+            "query": [],
+            "path": [
+              {
+                "key": "id",
+                "description": {
+                  "content": "(Required) The ID of the sync job to retry",
+                  "type": "text/plain"
+                },
+                "example": "dolore proident"
+              }
+            ],
+            "headers": [
+              {
+                "key": "Connection-Token",
+                "value": "{{connectionToken}}",
+                "description": {
+                  "content": "(Required) The token returned when a user authenticated their account. This authorizes access to a specific account.",
+                  "type": "text/plain"
+                }
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "description": ""
+              }
+            ]
+          },
+          "body": null,
+          "responses": []
+        },
+        {
+          "name": "Cancel Sync",
+          "description": "Cancel a sync job mid-way through. This is useful for cancelling syncs that are no longer needed. Cancelled syncs will be marked as failed and can be retried.",
+          "method": "POST",
+          "path": "/syncs/:id/cancel",
+          "parameters": {
+            "query": [],
+            "path": [
+              {
+                "key": "id",
+                "description": {
+                  "content": "(Required) The ID of the sync job to retry",
+                  "type": "text/plain"
+                },
+                "example": "dolore proident"
+              }
+            ],
+            "headers": [
+              {
+                "key": "Connection-Token",
+                "value": "{{connectionToken}}",
+                "description": {
+                  "content": "(Required) The token returned when a user authenticated their account. This authorizes access to a specific account.",
+                  "type": "text/plain"
+                }
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "description": ""
+              }
+            ]
+          },
+          "body": null,
+          "responses": []
+        },
+        {
+          "name": "Passthrough",
+          "description": "Make an authenticated request to the underlying telematics provider. \n\nThis endpoint helps ensure that you are never limited by Terminal. You can use passthrough requests to access capabilities that may be limited to a specific TSP or not yet in the normalized model.\n\nOur team is here and ready to support custom use cases that may need `/passthrough`.",
+          "method": "POST",
+          "path": "/passthrough",
+          "parameters": {
+            "query": [],
+            "path": [],
+            "headers": [
+              {
+                "key": "Connection-Token",
+                "value": "{{connectionToken}}",
+                "description": {
+                  "content": "(Required) The token returned when a user authenticated their account. This authorizes access to a specific account.",
+                  "type": "text/plain"
+                }
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "description": ""
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "description": ""
+              }
+            ]
+          },
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"method\": \"POST\",\n  \"path\": \"/reports\",\n  \"headers\": {},\n  \"body\": \"{\\\"reportId\\\":\\\"1234\\\"}\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          },
+          "responses": []
+        }
+      ]
+    },
+    {
+      "name": "Drivers",
+      "description": "",
+      "endpoints": [
+        {
+          "name": "List Drivers",
+          "description": "List all of the drivers in the connected account",
+          "method": "GET",
+          "path": "/drivers",
+          "parameters": {
+            "query": [
+              {
+                "key": "cursor",
+                "description": "Pagination cursor to start requests from",
+                "required": false,
+                "example": "{{nextCursor}}"
+              },
+              {
+                "key": "limit",
+                "description": "The maximum number of results to return in a page.",
+                "required": false,
+                "example": "1"
+              },
+              {
+                "key": "modifiedAfter",
+                "description": "Only include records that were last modified after a provided date.",
+                "required": false,
+                "example": "2021-01-06T03:24:53.000Z"
+              },
+              {
+                "key": "modifiedBefore",
+                "description": "Only include records that were last modified before a provided date.",
+                "required": false,
+                "example": "2021-01-06T03:24:53.000Z"
+              },
+              {
+                "key": "raw",
+                "description": "Include raw responses used to normalize model. Used for debugging or accessing unique properties that are not unified.",
+                "required": false,
+                "example": "true"
+              },
+              {
+                "key": "hidden",
+                "description": "Show hidden records that don't match the configured filters. Defaults to false.",
+                "required": true,
+                "example": "true"
+              },
+              {
+                "key": "deleted",
+                "description": "Show \"soft-deleted\" records that have been deleted from the provider. Defaults to false.",
+                "required": true,
+                "example": "true"
+              },
+              {
+                "key": "expand",
+                "description": "Expand resources in the returned response",
+                "required": false,
+                "example": ""
+              }
+            ],
+            "path": [],
+            "headers": [
+              {
+                "key": "Connection-Token",
+                "value": "{{connectionToken}}",
+                "description": {
+                  "content": "(Required) The token returned when a user authenticated their account. This authorizes access to a specific account.",
+                  "type": "text/plain"
+                }
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "description": ""
+              }
+            ]
+          },
+          "body": null,
+          "responses": []
+        },
+        {
+          "name": "Get Driver",
+          "description": "Get the details of a specific driver",
+          "method": "GET",
+          "path": "/drivers/:id",
+          "parameters": {
+            "query": [
+              {
+                "key": "raw",
+                "description": "Include raw responses used to normalize model. Used for debugging or accessing unique properties that are not unified.",
+                "required": false,
+                "example": "true"
+              },
+              {
+                "key": "expand",
+                "description": "Expand resources in the returned response",
+                "required": false,
+                "example": ""
+              }
+            ],
+            "path": [
+              {
+                "key": "id",
+                "description": {
+                  "content": "(Required) ",
+                  "type": "text/plain"
+                },
+                "example": "{{driverId}}"
+              }
+            ],
+            "headers": [
+              {
+                "key": "Connection-Token",
+                "value": "{{connectionToken}}",
+                "description": {
+                  "content": "(Required) The token returned when a user authenticated their account. This authorizes access to a specific account.",
+                  "type": "text/plain"
+                }
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "description": ""
+              }
+            ]
+          },
+          "body": null,
+          "responses": []
+        }
+      ]
+    },
+    {
+      "name": "Groups",
+      "description": "",
+      "endpoints": [
+        {
+          "name": "List Groups",
+          "description": "",
+          "method": "GET",
+          "path": "/groups",
+          "parameters": {
+            "query": [
+              {
+                "key": "limit",
+                "description": "The maximum number of results to return in a page.",
+                "required": false,
+                "example": "1"
+              },
+              {
+                "key": "cursor",
+                "description": "Pagination cursor to start requests from",
+                "required": false,
+                "example": "{{nextCursor}}"
+              },
+              {
+                "key": "expand",
+                "description": "Expand resources in the returned response",
+                "required": false,
+                "example": ""
+              },
+              {
+                "key": "raw",
+                "description": "Include raw responses used to normalize model. Used for debugging or accessing unique properties that are not unified.",
+                "required": false,
+                "example": "true"
+              },
+              {
+                "key": "modifiedAfter",
+                "description": "Only include records that were last modified after a provided date.",
+                "required": false,
+                "example": "2021-01-06T03:24:53.000Z"
+              },
+              {
+                "key": "modifiedBefore",
+                "description": "Only include records that were last modified before a provided date.",
+                "required": false,
+                "example": "2021-01-06T03:24:53.000Z"
+              },
+              {
+                "key": "deleted",
+                "description": "Show \"soft-deleted\" records that have been deleted from the provider. Defaults to false.",
+                "required": true,
+                "example": "true"
+              }
+            ],
+            "path": [],
+            "headers": [
+              {
+                "key": "Connection-Token",
+                "value": "{{connectionToken}}",
+                "description": {
+                  "content": "(Required) The token returned when a user authenticated their account. This authorizes access to a specific account.",
+                  "type": "text/plain"
+                }
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "description": ""
+              }
+            ]
+          },
+          "body": null,
+          "responses": []
+        }
+      ]
+    },
+    {
+      "name": "Hours of Service",
+      "description": "",
+      "endpoints": [
+        {
+          "name": "Available Time for Drivers",
+          "description": "List available time for the driver. This endpoint provides live access to the driver's available time. Different than most endpoints, this endpoint calls the provider's API in real time to get the latest available time for the driver. This endpoint is useful for building real time applications that need to know the driver's available time.",
+          "method": "GET",
+          "path": "/hos/available-time",
+          "parameters": {
+            "query": [
+              {
+                "key": "cursor",
+                "description": "Pagination cursor to start requests from",
+                "required": false,
+                "example": "{{nextCursor}}"
+              },
+              {
+                "key": "limit",
+                "description": "The maximum number of results to return in a page.",
+                "required": false,
+                "example": "1"
+              },
+              {
+                "key": "driverIds",
+                "description": "Comma separated list of driver IDs to filter for. Can filter up to 50 drivers at a time.",
+                "required": false,
+                "example": "{{driverId}}"
+              },
+              {
+                "key": "expand",
+                "description": "Expand resources in the returned response",
+                "required": false,
+                "example": ""
+              },
+              {
+                "key": "raw",
+                "description": "Include raw responses used to normalize model. Used for debugging or accessing unique properties that are not unified.",
+                "required": false,
+                "example": "true"
+              }
+            ],
+            "path": [],
+            "headers": [
+              {
+                "key": "Connection-Token",
+                "value": "{{connectionToken}}",
+                "description": {
+                  "content": "(Required) The token returned when a user authenticated their account. This authorizes access to a specific account.",
+                  "type": "text/plain"
+                }
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "description": ""
+              }
+            ]
+          },
+          "body": null,
+          "responses": []
+        },
+        {
+          "name": "List HOS Logs",
+          "description": "List all hours of service logs. HOS logs are tracked as the distinct changes in duty status.",
+          "method": "GET",
+          "path": "/hos/logs",
+          "parameters": {
+            "query": [
+              {
+                "key": "cursor",
+                "description": "Pagination cursor to start requests from",
+                "required": false,
+                "example": "{{nextCursor}}"
+              },
+              {
+                "key": "limit",
+                "description": "The maximum number of results to return in a page.",
+                "required": false,
+                "example": "1"
+              },
+              {
+                "key": "startedAfter",
+                "description": "Only include records of statuses that started after a provided date.",
+                "required": false,
+                "example": "2021-01-06T03:24:53.000Z"
+              },
+              {
+                "key": "startedBefore",
+                "description": "Only include records of statuses that started before a provided date.",
+                "required": false,
+                "example": "2021-01-06T03:24:53.000Z"
+              },
+              {
+                "key": "modifiedAfter",
+                "description": "Only include records that were last modified after a provided date.",
+                "required": false,
+                "example": "2021-01-06T03:24:53.000Z"
+              },
+              {
+                "key": "modifiedBefore",
+                "description": "Only include records that were last modified before a provided date.",
+                "required": false,
+                "example": "2021-01-06T03:24:53.000Z"
+              },
+              {
+                "key": "driverIds",
+                "description": "Comma separated list of driver IDs to filter for. Can filter up to 50 drivers at a time.",
+                "required": false,
+                "example": "{{driverId}}"
+              },
+              {
+                "key": "expand",
+                "description": "Expand resources in the returned response",
+                "required": false,
+                "example": ""
+              },
+              {
+                "key": "raw",
+                "description": "Include raw responses used to normalize model. Used for debugging or accessing unique properties that are not unified.",
+                "required": false,
+                "example": "true"
+              }
+            ],
+            "path": [],
+            "headers": [
+              {
+                "key": "Connection-Token",
+                "value": "{{connectionToken}}",
+                "description": {
+                  "content": "(Required) The token returned when a user authenticated their account. This authorizes access to a specific account.",
+                  "type": "text/plain"
+                }
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "description": ""
+              }
+            ]
+          },
+          "body": null,
+          "responses": []
+        },
+        {
+          "name": "List HOS Daily Logs",
+          "description": "List daily summary of hours of service. Each daily log represents the time a driver spent in each duty status for a given day.",
+          "method": "GET",
+          "path": "/hos/daily-logs",
+          "parameters": {
+            "query": [
+              {
+                "key": "cursor",
+                "description": "Pagination cursor to start requests from",
+                "required": false,
+                "example": "{{nextCursor}}"
+              },
+              {
+                "key": "limit",
+                "description": "The maximum number of results to return in a page.",
+                "required": false,
+                "example": "1"
+              },
+              {
+                "key": "startDate",
+                "description": "Include records from on or after a specific date. Defaults to beginning of history",
+                "required": false,
+                "example": "2021-01-06"
+              },
+              {
+                "key": "endDate",
+                "description": "Include records from on or before a specific date. Defaults to now",
+                "required": false,
+                "example": "2021-01-06"
+              },
+              {
+                "key": "modifiedAfter",
+                "description": "Only include records that were last modified after a provided date.",
+                "required": false,
+                "example": "2021-01-06T03:24:53.000Z"
+              },
+              {
+                "key": "modifiedBefore",
+                "description": "Only include records that were last modified before a provided date.",
+                "required": false,
+                "example": "2021-01-06T03:24:53.000Z"
+              },
+              {
+                "key": "driverIds",
+                "description": "Comma separated list of driver IDs to filter for. Can filter up to 50 drivers at a time.",
+                "required": false,
+                "example": "{{driverId}}"
+              },
+              {
+                "key": "raw",
+                "description": "Include raw responses used to normalize model. Used for debugging or accessing unique properties that are not unified.",
+                "required": false,
+                "example": "true"
+              },
+              {
+                "key": "expand",
+                "description": "Expand resources in the returned response",
+                "required": false,
+                "example": ""
+              }
+            ],
+            "path": [],
+            "headers": [
+              {
+                "key": "Connection-Token",
+                "value": "{{connectionToken}}",
+                "description": {
+                  "content": "(Required) The token returned when a user authenticated their account. This authorizes access to a specific account.",
+                  "type": "text/plain"
+                }
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "description": ""
+              }
+            ]
+          },
+          "body": null,
+          "responses": []
+        }
+      ]
+    },
+    {
+      "name": "IFTA",
+      "description": "",
+      "endpoints": [
+        {
+          "name": "Get IFTA Summary",
+          "description": "Get all vehicle IFTA reports for the requested time span.\n\nCurrently can only increment by full months. \n\n_Note:_ data may change for a few days after the month. We will continue to update those reports to ensure you get accurate results.",
+          "method": "GET",
+          "path": "/ifta/summary",
+          "parameters": {
+            "query": [
+              {
+                "key": "cursor",
+                "description": "Pagination cursor to start requests from",
+                "required": false,
+                "example": "{{nextCursor}}"
+              },
+              {
+                "key": "expand",
+                "description": "Expand resources in the returned response",
+                "required": false,
+                "example": ""
+              },
+              {
+                "key": "raw",
+                "description": "Include raw responses used to normalize model. Used for debugging or accessing unique properties that are not unified.",
+                "required": false,
+                "example": "true"
+              },
+              {
+                "key": "startMonth",
+                "description": "(Required) The month from which to start including vehicle reports",
+                "required": true,
+                "example": "2021-01"
+              },
+              {
+                "key": "endMonth",
+                "description": "(Required) Include vehicle reports up to and including this month",
+                "required": true,
+                "example": "2021-01"
+              },
+              {
+                "key": "groupBy",
+                "description": "Computes the total distance traversed within a specified month range, with the results grouped by either jurisdiction, vehicle, or both. If no grouping parameter is provided, the default grouping is `vehicle,jurisdiction`.",
+                "required": true,
+                "example": "vehicle,jurisdiction"
+              }
+            ],
+            "path": [],
+            "headers": [
+              {
+                "key": "Connection-Token",
+                "value": "{{connectionToken}}",
+                "description": {
+                  "content": "(Required) The token returned when a user authenticated their account. This authorizes access to a specific account.",
+                  "type": "text/plain"
+                }
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "description": ""
+              }
+            ]
+          },
+          "body": null,
+          "responses": []
+        }
+      ]
+    },
+    {
+      "name": "Issues",
+      "description": "",
+      "endpoints": [
+        {
+          "name": "List Issues",
+          "description": "List all issues that have been observed by Terminal.\nIssues are generated when we observe something that may impact the completeness or accuracy of the data we provide but do not justify a full error.\nFor example, if we lack permissions for a specific resource or need to skip an item due to invalid data.",
+          "method": "GET",
+          "path": "/issues",
+          "parameters": {
+            "query": [
+              {
+                "key": "limit",
+                "description": "The maximum number of results to return in a page.",
+                "required": false,
+                "example": "1"
+              },
+              {
+                "key": "cursor",
+                "description": "Pagination cursor to start requests from",
+                "required": false,
+                "example": "{{nextCursor}}"
+              },
+              {
+                "key": "lastReportedAfter",
+                "description": "Timestamp to start when the issue was last observed",
+                "required": true,
+                "example": "1955-08-26"
+              },
+              {
+                "key": "lastReportedBefore",
+                "description": "Timestamp to end when the issue was last observed",
+                "required": true,
+                "example": "1955-08-26"
+              },
+              {
+                "key": "expand",
+                "description": "Expand related resources to see all details",
+                "required": false,
+                "example": ""
+              },
+              {
+                "key": "connectionId",
+                "description": "Filter issues to a specific connection",
+                "required": false,
+                "example": "conn_01GV12VR4DJP70GD1ZBK0SDWFH"
+              },
+              {
+                "key": "errorCode",
+                "description": "Filter issues to a specific error code",
+                "required": true,
+                "example": "missing_permissions"
+              },
+              {
+                "key": "status",
+                "description": "Filter issues to a specific status",
+                "required": true,
+                "example": "resolved"
+              }
+            ],
+            "path": [],
+            "headers": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "description": ""
+              }
+            ]
+          },
+          "body": null,
+          "responses": []
+        },
+        {
+          "name": "Resolve Issue",
+          "description": "Mark an issue's status as `resolved` until the issue is observed again.",
+          "method": "POST",
+          "path": "/issues/:issueId/resolve",
+          "parameters": {
+            "query": [],
+            "path": [
+              {
+                "key": "issueId",
+                "description": {
+                  "content": "(Required) ",
+                  "type": "text/plain"
+                },
+                "example": "dolore proident"
+              }
+            ],
+            "headers": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "description": ""
+              }
+            ]
+          },
+          "body": null,
+          "responses": []
+        }
+      ]
+    },
+    {
+      "name": "Providers",
+      "description": "",
+      "endpoints": [
+        {
+          "name": "List Providers",
+          "description": "Retrieve a list of the providers Terminal supports. This endpoint will grow to include additional details about the supported capabilities of each provider.",
+          "method": "GET",
+          "path": "/providers",
+          "parameters": {
+            "query": [],
+            "path": [],
+            "headers": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "description": ""
+              }
+            ]
+          },
+          "body": null,
+          "responses": []
+        }
+      ]
+    },
+    {
+      "name": "Safety",
+      "description": "",
+      "endpoints": [
+        {
+          "name": "List Safety Events",
+          "description": "List all safety events detected by the provider.",
+          "method": "GET",
+          "path": "/safety/events",
+          "parameters": {
+            "query": [
+              {
+                "key": "cursor",
+                "description": "Pagination cursor to start requests from",
+                "required": false,
+                "example": "{{nextCursor}}"
+              },
+              {
+                "key": "limit",
+                "description": "The maximum number of results to return in a page.",
+                "required": false,
+                "example": "1"
+              },
+              {
+                "key": "modifiedAfter",
+                "description": "Only include records that were last modified after a provided date.",
+                "required": false,
+                "example": "2021-01-06T03:24:53.000Z"
+              },
+              {
+                "key": "modifiedBefore",
+                "description": "Only include records that were last modified before a provided date.",
+                "required": false,
+                "example": "2021-01-06T03:24:53.000Z"
+              },
+              {
+                "key": "startedAfter",
+                "description": "Only include records of statuses that started after a provided date.",
+                "required": false,
+                "example": "2021-01-06T03:24:53.000Z"
+              },
+              {
+                "key": "startedBefore",
+                "description": "Only include records of statuses that started before a provided date.",
+                "required": false,
+                "example": "2021-01-06T03:24:53.000Z"
+              },
+              {
+                "key": "driverIds",
+                "description": "Comma separated list of driver IDs to filter for. Can filter up to 50 drivers at a time.",
+                "required": false,
+                "example": "{{driverId}}"
+              },
+              {
+                "key": "vehicleIds",
+                "description": "Comma separated list of vehicle IDs to filter for. Can filter up to 50 vehicles at a time.",
+                "required": false,
+                "example": "{{vehicleId}}"
+              },
+              {
+                "key": "expand",
+                "description": "Expand resources in the returned response",
+                "required": false,
+                "example": ""
+              },
+              {
+                "key": "raw",
+                "description": "Include raw responses used to normalize model. Used for debugging or accessing unique properties that are not unified.",
+                "required": false,
+                "example": "true"
+              }
+            ],
+            "path": [],
+            "headers": [
+              {
+                "key": "Connection-Token",
+                "value": "{{connectionToken}}",
+                "description": {
+                  "content": "(Required) The token returned when a user authenticated their account. This authorizes access to a specific account.",
+                  "type": "text/plain"
+                }
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "description": ""
+              }
+            ]
+          },
+          "body": null,
+          "responses": []
+        },
+        {
+          "name": "Get Safety Event",
+          "description": "Get a safety event by id.",
+          "method": "GET",
+          "path": "/safety/events/:id",
+          "parameters": {
+            "query": [
+              {
+                "key": "expand",
+                "description": "Expand resources in the returned response",
+                "required": false,
+                "example": ""
+              },
+              {
+                "key": "raw",
+                "description": "Include raw responses used to normalize model. Used for debugging or accessing unique properties that are not unified.",
+                "required": false,
+                "example": "true"
+              }
+            ],
+            "path": [
+              {
+                "key": "id",
+                "description": {
+                  "content": "(Required) The id of the safety event.",
+                  "type": "text/plain"
+                },
+                "example": "dolore proident"
+              }
+            ],
+            "headers": [
+              {
+                "key": "Connection-Token",
+                "value": "{{connectionToken}}",
+                "description": {
+                  "content": "(Required) The token returned when a user authenticated their account. This authorizes access to a specific account.",
+                  "type": "text/plain"
+                }
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "description": ""
+              }
+            ]
+          },
+          "body": null,
+          "responses": []
+        },
+        {
+          "name": "Get Event Camera Media",
+          "description": "Get camera media for a given safety event.",
+          "method": "GET",
+          "path": "/safety/events/:id/camera-media",
+          "parameters": {
+            "query": [
+              {
+                "key": "raw",
+                "description": "Include raw responses used to normalize model. Used for debugging or accessing unique properties that are not unified.",
+                "required": false,
+                "example": "true"
+              }
+            ],
+            "path": [
+              {
+                "key": "id",
+                "description": {
+                  "content": "(Required) The id of the safety event.",
+                  "type": "text/plain"
+                },
+                "example": "dolore proident"
+              }
+            ],
+            "headers": [
+              {
+                "key": "Connection-Token",
+                "value": "{{connectionToken}}",
+                "description": {
+                  "content": "(Required) The token returned when a user authenticated their account. This authorizes access to a specific account.",
+                  "type": "text/plain"
+                }
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "description": ""
+              }
+            ]
+          },
+          "body": null,
+          "responses": []
+        }
+      ]
+    },
+    {
+      "name": "Trailers",
+      "description": "",
+      "endpoints": [
+        {
+          "name": "List Trailers",
+          "description": "",
+          "method": "GET",
+          "path": "/trailers",
+          "parameters": {
+            "query": [
+              {
+                "key": "limit",
+                "description": "The maximum number of results to return in a page.",
+                "required": false,
+                "example": "1"
+              },
+              {
+                "key": "cursor",
+                "description": "Pagination cursor to start requests from",
+                "required": false,
+                "example": "{{nextCursor}}"
+              },
+              {
+                "key": "expand",
+                "description": "Expand resources in the returned response",
+                "required": false,
+                "example": ""
+              },
+              {
+                "key": "raw",
+                "description": "Include raw responses used to normalize model. Used for debugging or accessing unique properties that are not unified.",
+                "required": false,
+                "example": "true"
+              },
+              {
+                "key": "modifiedAfter",
+                "description": "Only include records that were last modified after a provided date.",
+                "required": false,
+                "example": "2021-01-06T03:24:53.000Z"
+              },
+              {
+                "key": "modifiedBefore",
+                "description": "Only include records that were last modified before a provided date.",
+                "required": false,
+                "example": "2021-01-06T03:24:53.000Z"
+              },
+              {
+                "key": "deleted",
+                "description": "Show \"soft-deleted\" records that have been deleted from the provider. Defaults to false.",
+                "required": true,
+                "example": "true"
+              }
+            ],
+            "path": [],
+            "headers": [
+              {
+                "key": "Connection-Token",
+                "value": "{{connectionToken}}",
+                "description": {
+                  "content": "(Required) The token returned when a user authenticated their account. This authorizes access to a specific account.",
+                  "type": "text/plain"
+                }
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "description": ""
+              }
+            ]
+          },
+          "body": null,
+          "responses": []
+        },
+        {
+          "name": "Latest Trailer Locations",
+          "description": "",
+          "method": "GET",
+          "path": "/trailers/locations",
+          "parameters": {
+            "query": [
+              {
+                "key": "limit",
+                "description": "The maximum number of results to return in a page.",
+                "required": false,
+                "example": "1"
+              },
+              {
+                "key": "cursor",
+                "description": "Pagination cursor to start requests from",
+                "required": false,
+                "example": "{{nextCursor}}"
+              },
+              {
+                "key": "expand",
+                "description": "Expand resources in the returned response",
+                "required": false,
+                "example": ""
+              },
+              {
+                "key": "raw",
+                "description": "Include raw responses used to normalize model. Used for debugging or accessing unique properties that are not unified.",
+                "required": false,
+                "example": "true"
+              }
+            ],
+            "path": [],
+            "headers": [
+              {
+                "key": "Connection-Token",
+                "value": "{{connectionToken}}",
+                "description": {
+                  "content": "(Required) The token returned when a user authenticated their account. This authorizes access to a specific account.",
+                  "type": "text/plain"
+                }
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "description": ""
+              }
+            ]
+          },
+          "body": null,
+          "responses": []
+        }
+      ]
+    },
+    {
+      "name": "Vehicles",
+      "description": "",
+      "endpoints": [
+        {
+          "name": "List Vehicles",
+          "description": "List all of the vehicles in the connected account",
+          "method": "GET",
+          "path": "/vehicles",
+          "parameters": {
+            "query": [
+              {
+                "key": "cursor",
+                "description": "Pagination cursor to start requests from",
+                "required": false,
+                "example": "{{nextCursor}}"
+              },
+              {
+                "key": "limit",
+                "description": "The maximum number of results to return in a page.",
+                "required": false,
+                "example": "1"
+              },
+              {
+                "key": "modifiedAfter",
+                "description": "Only include records that were last modified after a provided date.",
+                "required": false,
+                "example": "2021-01-06T03:24:53.000Z"
+              },
+              {
+                "key": "modifiedBefore",
+                "description": "Only include records that were last modified before a provided date.",
+                "required": false,
+                "example": "2021-01-06T03:24:53.000Z"
+              },
+              {
+                "key": "raw",
+                "description": "Include raw responses used to normalize model. Used for debugging or accessing unique properties that are not unified.",
+                "required": false,
+                "example": "true"
+              },
+              {
+                "key": "hidden",
+                "description": "Show hidden records that don't match the configured filters. Defaults to false.",
+                "required": true,
+                "example": "true"
+              },
+              {
+                "key": "deleted",
+                "description": "Show \"soft-deleted\" records that have been deleted from the provider. Defaults to false.",
+                "required": true,
+                "example": "true"
+              },
+              {
+                "key": "expand",
+                "description": "Expand resources in the returned response",
+                "required": false,
+                "example": ""
+              }
+            ],
+            "path": [],
+            "headers": [
+              {
+                "key": "Connection-Token",
+                "value": "{{connectionToken}}",
+                "description": {
+                  "content": "(Required) The token returned when a user authenticated their account. This authorizes access to a specific account.",
+                  "type": "text/plain"
+                }
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "description": ""
+              }
+            ]
+          },
+          "body": null,
+          "responses": []
+        },
+        {
+          "name": "Get Vehicle",
+          "description": "Get the details of a specific vehicle",
+          "method": "GET",
+          "path": "/vehicles/:id",
+          "parameters": {
+            "query": [
+              {
+                "key": "raw",
+                "description": "Include raw responses used to normalize model. Used for debugging or accessing unique properties that are not unified.",
+                "required": false,
+                "example": "true"
+              },
+              {
+                "key": "expand",
+                "description": "Expand resources in the returned response",
+                "required": false,
+                "example": ""
+              }
+            ],
+            "path": [
+              {
+                "key": "id",
+                "description": {
+                  "content": "(Required) ",
+                  "type": "text/plain"
+                },
+                "example": "{{vehicleId}}"
+              }
+            ],
+            "headers": [
+              {
+                "key": "Connection-Token",
+                "value": "{{connectionToken}}",
+                "description": {
+                  "content": "(Required) The token returned when a user authenticated their account. This authorizes access to a specific account.",
+                  "type": "text/plain"
+                }
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "description": ""
+              }
+            ]
+          },
+          "body": null,
+          "responses": []
+        },
+        {
+          "name": "Latest Vehicle Locations",
+          "description": "List the latest location of the vehicles in the connected account.\nThis endpoint will call the provider's API in real time to get the latest location of the vehicle. \n_Please note: this endpoint will exclude vehicles that have no last known location._",
+          "method": "GET",
+          "path": "/vehicles/locations",
+          "parameters": {
+            "query": [
+              {
+                "key": "cursor",
+                "description": "Pagination cursor to start requests from",
+                "required": false,
+                "example": "{{nextCursor}}"
+              },
+              {
+                "key": "limit",
+                "description": "The maximum number of results to return in a page.",
+                "required": false,
+                "example": "1"
+              },
+              {
+                "key": "raw",
+                "description": "Include raw responses used to normalize model. Used for debugging or accessing unique properties that are not unified.",
+                "required": false,
+                "example": "true"
+              },
+              {
+                "key": "vehicleIds",
+                "description": "Comma separated list of vehicle IDs to filter for. Can filter up to 50 vehicles at a time.",
+                "required": false,
+                "example": "{{vehicleId}}"
+              },
+              {
+                "key": "driverIds",
+                "description": "Comma separated list of driver IDs to filter for. Can filter up to 50 drivers at a time.",
+                "required": false,
+                "example": "{{driverId}}"
+              },
+              {
+                "key": "expand",
+                "description": "Expand resources in the returned response",
+                "required": false,
+                "example": ""
+              }
+            ],
+            "path": [],
+            "headers": [
+              {
+                "key": "Connection-Token",
+                "value": "{{connectionToken}}",
+                "description": {
+                  "content": "(Required) The token returned when a user authenticated their account. This authorizes access to a specific account.",
+                  "type": "text/plain"
+                }
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "description": ""
+              }
+            ]
+          },
+          "body": null,
+          "responses": []
+        },
+        {
+          "name": "Historical Vehicle Locations",
+          "description": "List the historical breadcrumb locations for a vehicle.\n\n_Note:_\n\nGiven the large volume of location data available, we encourage customers to accept compressed (`gzip`) responses in order to maximize throughput. This is supported with many popular HTTP clients. Result limits vary depending on if results are compressed or not.",
+          "method": "GET",
+          "path": "/vehicles/:vehicleId/locations",
+          "parameters": {
+            "query": [
+              {
+                "key": "cursor",
+                "description": "Pagination cursor to start requests from",
+                "required": false,
+                "example": "{{nextCursor}}"
+              },
+              {
+                "key": "limit",
+                "description": "The maximum number of results to return in a page.",
+                "required": false,
+                "example": "1"
+              },
+              {
+                "key": "startAt",
+                "description": "Timestamp to start from - defaults to beginning of history",
+                "required": false,
+                "example": "2021-01-06T03:24:53.000Z"
+              },
+              {
+                "key": "endAt",
+                "description": "Timestamp to end at - defaults to now",
+                "required": false,
+                "example": "2021-01-06T03:24:53.000Z"
+              },
+              {
+                "key": "raw",
+                "description": "Include raw responses used to normalize model. Used for debugging or accessing unique properties that are not unified.",
+                "required": false,
+                "example": "true"
+              }
+            ],
+            "path": [
+              {
+                "key": "vehicleId",
+                "description": {
+                  "content": "(Required) Vehicle to retrieve breadcrumb locations for",
+                  "type": "text/plain"
+                },
+                "example": "{{vehicleId}}"
+              }
+            ],
+            "headers": [
+              {
+                "key": "Connection-Token",
+                "value": "{{connectionToken}}",
+                "description": {
+                  "content": "(Required) The token returned when a user authenticated their account. This authorizes access to a specific account.",
+                  "type": "text/plain"
+                }
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "description": ""
+              }
+            ]
+          },
+          "body": null,
+          "responses": []
+        },
+        {
+          "name": "Historical Vehicle Stats",
+          "description": "List historical stats and logs about the vehicle.",
+          "method": "GET",
+          "path": "/vehicles/:vehicleId/stats/historical",
+          "parameters": {
+            "query": [
+              {
+                "key": "cursor",
+                "description": "Pagination cursor to start requests from",
+                "required": false,
+                "example": "{{nextCursor}}"
+              },
+              {
+                "key": "limit",
+                "description": "The maximum number of results to return in a page.",
+                "required": false,
+                "example": "1"
+              },
+              {
+                "key": "expand",
+                "description": "Expand resources in the returned response",
+                "required": false,
+                "example": ""
+              },
+              {
+                "key": "startAt",
+                "description": "Timestamp to start from - defaults to beginning of history",
+                "required": false,
+                "example": "2021-01-06T03:24:53.000Z"
+              },
+              {
+                "key": "endAt",
+                "description": "Timestamp to end at - defaults to now",
+                "required": false,
+                "example": "2021-01-06T03:24:53.000Z"
+              },
+              {
+                "key": "types",
+                "description": "Comma separated list of vehicle stats to filter for",
+                "required": false,
+                "example": "odometer,engine_state,fuel_level,total_fuel_consumption"
+              },
+              {
+                "key": "raw",
+                "description": "Include raw responses used to normalize model. Used for debugging or accessing unique properties that are not unified.",
+                "required": false,
+                "example": "true"
+              }
+            ],
+            "path": [
+              {
+                "key": "vehicleId",
+                "description": {
+                  "content": "(Required) ",
+                  "type": "text/plain"
+                },
+                "example": "{{vehicleId}}"
+              }
+            ],
+            "headers": [
+              {
+                "key": "Connection-Token",
+                "value": "{{connectionToken}}",
+                "description": {
+                  "content": "(Required) The token returned when a user authenticated their account. This authorizes access to a specific account.",
+                  "type": "text/plain"
+                }
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "description": ""
+              }
+            ]
+          },
+          "body": null,
+          "responses": []
+        }
+      ]
+    },
+    {
+      "name": "Vehicle Utilization",
+      "description": "",
+      "endpoints": [
+        {
+          "name": "Get Vehicle Utilization",
+          "description": "Get vehicle utilization days containing information about fuel consumption, distance traveled, and operational time metrics.",
+          "method": "GET",
+          "path": "/vehicles/utilization",
+          "parameters": {
+            "query": [
+              {
+                "key": "cursor",
+                "description": "Pagination cursor to start requests from",
+                "required": false,
+                "example": "{{nextCursor}}"
+              },
+              {
+                "key": "limit",
+                "description": "The maximum number of results to return in a page.",
+                "required": false,
+                "example": "1"
+              },
+              {
+                "key": "startDate",
+                "description": "Include records from on or after a specific date. Defaults to beginning of history",
+                "required": false,
+                "example": "2021-01-06"
+              },
+              {
+                "key": "endDate",
+                "description": "Include records from on or before a specific date. Defaults to now",
+                "required": false,
+                "example": "2021-01-06"
+              },
+              {
+                "key": "modifiedAfter",
+                "description": "Only include records that were last modified after a provided date.",
+                "required": false,
+                "example": "2021-01-06T03:24:53.000Z"
+              },
+              {
+                "key": "modifiedBefore",
+                "description": "Only include records that were last modified before a provided date.",
+                "required": false,
+                "example": "2021-01-06T03:24:53.000Z"
+              },
+              {
+                "key": "vehicleIds",
+                "description": "Comma separated list of vehicle IDs to filter for. Can filter up to 50 vehicles at a time.",
+                "required": false,
+                "example": "{{vehicleId}}"
+              },
+              {
+                "key": "expand",
+                "description": "Expand resources in the returned response",
+                "required": false,
+                "example": ""
+              },
+              {
+                "key": "raw",
+                "description": "Include raw responses used to normalize model. Used for debugging or accessing unique properties that are not unified.",
+                "required": false,
+                "example": "true"
+              }
+            ],
+            "path": [],
+            "headers": [
+              {
+                "key": "Connection-Token",
+                "value": "{{connectionToken}}",
+                "description": {
+                  "content": "(Required) The token returned when a user authenticated their account. This authorizes access to a specific account.",
+                  "type": "text/plain"
+                }
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "description": ""
+              }
+            ]
+          },
+          "body": null,
+          "responses": []
+        }
+      ]
+    },
+    {
+      "name": "Webhook Events",
+      "description": "",
+      "endpoints": []
+    },
+    {
+      "name": "Trips",
+      "description": "",
+      "endpoints": [
+        {
+          "name": "List Historical Trips",
+          "description": "List all historical trips in the connected account. Trips define a period of time where a vehicle is in motion.",
+          "method": "GET",
+          "path": "/trips",
+          "parameters": {
+            "query": [
+              {
+                "key": "cursor",
+                "description": "Pagination cursor to start requests from",
+                "required": false,
+                "example": "{{nextCursor}}"
+              },
+              {
+                "key": "limit",
+                "description": "The maximum number of results to return in a page.",
+                "required": false,
+                "example": "1"
+              },
+              {
+                "key": "modifiedAfter",
+                "description": "Only include records that were last modified after a provided date.",
+                "required": false,
+                "example": "2021-01-06T03:24:53.000Z"
+              },
+              {
+                "key": "modifiedBefore",
+                "description": "Only include records that were last modified before a provided date.",
+                "required": false,
+                "example": "2021-01-06T03:24:53.000Z"
+              },
+              {
+                "key": "startedAfter",
+                "description": "Only include trips that started after a provided date.",
+                "required": false,
+                "example": "2021-01-06T03:24:53.000Z"
+              },
+              {
+                "key": "startedBefore",
+                "description": "Only include trips that started before a provided date.",
+                "required": false,
+                "example": "2021-01-06T03:24:53.000Z"
+              },
+              {
+                "key": "endedAfter",
+                "description": "Only include trips that ended after a provided date.",
+                "required": true,
+                "example": "2021-01-06T03:24:53.000Z"
+              },
+              {
+                "key": "endedBefore",
+                "description": "Only include trips that ended before a provided date.",
+                "required": true,
+                "example": "2021-01-06T03:24:53.000Z"
+              },
+              {
+                "key": "driverIds",
+                "description": "Comma separated list of driver IDs to filter for. Can filter up to 50 drivers at a time.",
+                "required": false,
+                "example": "{{driverId}}"
+              },
+              {
+                "key": "vehicleIds",
+                "description": "Comma separated list of vehicle IDs to filter for. Can filter up to 50 vehicles at a time.",
+                "required": false,
+                "example": "{{vehicleId}}"
+              },
+              {
+                "key": "raw",
+                "description": "Include raw responses used to normalize model. Used for debugging or accessing unique properties that are not unified.",
+                "required": false,
+                "example": "true"
+              },
+              {
+                "key": "expand",
+                "description": "Expand resources in the returned response",
+                "required": false,
+                "example": ""
+              }
+            ],
+            "path": [],
+            "headers": [
+              {
+                "key": "Connection-Token",
+                "value": "{{connectionToken}}",
+                "description": {
+                  "content": "(Required) The token returned when a user authenticated their account. This authorizes access to a specific account.",
+                  "type": "text/plain"
+                }
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "description": ""
+              }
+            ]
+          },
+          "body": null,
+          "responses": []
+        }
+      ]
+    },
+    {
+      "name": "Devices",
+      "description": "",
+      "endpoints": [
+        {
+          "name": "List Devices",
+          "description": "List all devices in the connected account.",
+          "method": "GET",
+          "path": "/devices",
+          "parameters": {
+            "query": [
+              {
+                "key": "cursor",
+                "description": "Pagination cursor to start requests from",
+                "required": false,
+                "example": "{{nextCursor}}"
+              },
+              {
+                "key": "limit",
+                "description": "The maximum number of results to return in a page.",
+                "required": false,
+                "example": "1"
+              },
+              {
+                "key": "modifiedAfter",
+                "description": "Only include records that were last modified after a provided date.",
+                "required": false,
+                "example": "2021-01-06T03:24:53.000Z"
+              },
+              {
+                "key": "modifiedBefore",
+                "description": "Only include records that were last modified before a provided date.",
+                "required": false,
+                "example": "2021-01-06T03:24:53.000Z"
+              },
+              {
+                "key": "raw",
+                "description": "Include raw responses used to normalize model. Used for debugging or accessing unique properties that are not unified.",
+                "required": false,
+                "example": "true"
+              },
+              {
+                "key": "deleted",
+                "description": "Show \"soft-deleted\" records that have been deleted from the provider. Defaults to false.",
+                "required": true,
+                "example": "true"
+              },
+              {
+                "key": "expand",
+                "description": "Expand resources in the returned response",
+                "required": false,
+                "example": ""
+              }
+            ],
+            "path": [],
+            "headers": [
+              {
+                "key": "Connection-Token",
+                "value": "{{connectionToken}}",
+                "description": {
+                  "content": "(Required) The token returned when a user authenticated their account. This authorizes access to a specific account.",
+                  "type": "text/plain"
+                }
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "description": ""
+              }
+            ]
+          },
+          "body": null,
+          "responses": []
+        }
+      ]
+    },
+    {
+      "name": "Fault Codes",
+      "description": "",
+      "endpoints": [
+        {
+          "name": "List Fault Code Events",
+          "description": "List all fault code events detected by the provider.",
+          "method": "GET",
+          "path": "/fault-codes/events",
+          "parameters": {
+            "query": [
+              {
+                "key": "cursor",
+                "description": "Pagination cursor to start requests from",
+                "required": false,
+                "example": "{{nextCursor}}"
+              },
+              {
+                "key": "limit",
+                "description": "The maximum number of results to return in a page.",
+                "required": false,
+                "example": "1"
+              },
+              {
+                "key": "modifiedAfter",
+                "description": "Only include records that were last modified after a provided date.",
+                "required": false,
+                "example": "2021-01-06T03:24:53.000Z"
+              },
+              {
+                "key": "modifiedBefore",
+                "description": "Only include records that were last modified before a provided date.",
+                "required": false,
+                "example": "2021-01-06T03:24:53.000Z"
+              },
+              {
+                "key": "startAt",
+                "description": "Only include fault code events after a provided date.",
+                "required": false,
+                "example": "2021-01-06T03:24:53.000Z"
+              },
+              {
+                "key": "endAt",
+                "description": "Only include fault code events before a provided date.",
+                "required": false,
+                "example": "2021-01-06T03:24:53.000Z"
+              },
+              {
+                "key": "vehicleIds",
+                "description": "Comma separated list of vehicle IDs to filter for. Can filter up to 50 vehicles at a time.",
+                "required": false,
+                "example": "{{vehicleId}}"
+              },
+              {
+                "key": "expand",
+                "description": "Expand resources in the returned response",
+                "required": false,
+                "example": ""
+              },
+              {
+                "key": "raw",
+                "description": "Include raw responses used to normalize model. Used for debugging or accessing unique properties that are not unified.",
+                "required": false,
+                "example": "true"
+              }
+            ],
+            "path": [],
+            "headers": [
+              {
+                "key": "Connection-Token",
+                "value": "{{connectionToken}}",
+                "description": {
+                  "content": "(Required) The token returned when a user authenticated their account. This authorizes access to a specific account.",
+                  "type": "text/plain"
+                }
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "description": ""
+              }
+            ]
+          },
+          "body": null,
+          "responses": []
+        }
+      ]
+    }
+  ]
+}

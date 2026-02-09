@@ -1,0 +1,206 @@
+[
+  {
+    "category": "Authentication",
+    "name": "Public Token Exchange",
+    "method": "POST",
+    "path": "/public-token/exchange"
+  },
+  {
+    "category": "Connections",
+    "name": "List All Connections",
+    "method": "GET",
+    "path": "/connections"
+  },
+  {
+    "category": "Connections",
+    "name": "Get Current Connection",
+    "method": "GET",
+    "path": "/connections/current"
+  },
+  {
+    "category": "Connections",
+    "name": "Update Current Connection",
+    "method": "PATCH",
+    "path": "/connections/current"
+  },
+  {
+    "category": "Data Management",
+    "name": "Request Sync",
+    "method": "POST",
+    "path": "/syncs"
+  },
+  {
+    "category": "Data Management",
+    "name": "List Sync History",
+    "method": "GET",
+    "path": "/syncs"
+  },
+  {
+    "category": "Data Management",
+    "name": "Get Sync Job Status",
+    "method": "GET",
+    "path": "/syncs/:id"
+  },
+  {
+    "category": "Data Management",
+    "name": "Retry Sync",
+    "method": "POST",
+    "path": "/syncs/:id/retry"
+  },
+  {
+    "category": "Data Management",
+    "name": "Cancel Sync",
+    "method": "POST",
+    "path": "/syncs/:id/cancel"
+  },
+  {
+    "category": "Data Management",
+    "name": "Passthrough",
+    "method": "POST",
+    "path": "/passthrough"
+  },
+  {
+    "category": "Drivers",
+    "name": "List Drivers",
+    "method": "GET",
+    "path": "/drivers"
+  },
+  {
+    "category": "Drivers",
+    "name": "Get Driver",
+    "method": "GET",
+    "path": "/drivers/:id"
+  },
+  {
+    "category": "Groups",
+    "name": "List Groups",
+    "method": "GET",
+    "path": "/groups"
+  },
+  {
+    "category": "Hours of Service",
+    "name": "Available Time for Drivers",
+    "method": "GET",
+    "path": "/hos/available-time"
+  },
+  {
+    "category": "Hours of Service",
+    "name": "List HOS Logs",
+    "method": "GET",
+    "path": "/hos/logs"
+  },
+  {
+    "category": "Hours of Service",
+    "name": "List HOS Daily Logs",
+    "method": "GET",
+    "path": "/hos/daily-logs"
+  },
+  {
+    "category": "IFTA",
+    "name": "Get IFTA Summary",
+    "method": "GET",
+    "path": "/ifta/summary"
+  },
+  {
+    "category": "Issues",
+    "name": "List Issues",
+    "method": "GET",
+    "path": "/issues"
+  },
+  {
+    "category": "Issues",
+    "name": "Resolve Issue",
+    "method": "POST",
+    "path": "/issues/:issueId/resolve"
+  },
+  {
+    "category": "Providers",
+    "name": "List Providers",
+    "method": "GET",
+    "path": "/providers"
+  },
+  {
+    "category": "Safety",
+    "name": "List Safety Events",
+    "method": "GET",
+    "path": "/safety/events"
+  },
+  {
+    "category": "Safety",
+    "name": "Get Safety Event",
+    "method": "GET",
+    "path": "/safety/events/:id"
+  },
+  {
+    "category": "Safety",
+    "name": "Get Event Camera Media",
+    "method": "GET",
+    "path": "/safety/events/:id/camera-media"
+  },
+  {
+    "category": "Trailers",
+    "name": "List Trailers",
+    "method": "GET",
+    "path": "/trailers"
+  },
+  {
+    "category": "Trailers",
+    "name": "Latest Trailer Locations",
+    "method": "GET",
+    "path": "/trailers/locations"
+  },
+  {
+    "category": "Vehicles",
+    "name": "List Vehicles",
+    "method": "GET",
+    "path": "/vehicles"
+  },
+  {
+    "category": "Vehicles",
+    "name": "Get Vehicle",
+    "method": "GET",
+    "path": "/vehicles/:id"
+  },
+  {
+    "category": "Vehicles",
+    "name": "Latest Vehicle Locations",
+    "method": "GET",
+    "path": "/vehicles/locations"
+  },
+  {
+    "category": "Vehicles",
+    "name": "Historical Vehicle Locations",
+    "method": "GET",
+    "path": "/vehicles/:vehicleId/locations"
+  },
+  {
+    "category": "Vehicles",
+    "name": "Historical Vehicle Stats",
+    "method": "GET",
+    "path": "/vehicles/:vehicleId/stats/historical"
+  },
+  {
+    "category": "Vehicle Utilization",
+    "name": "Get Vehicle Utilization",
+    "method": "GET",
+    "path": "/vehicles/utilization"
+  },
+  {
+    "category": "Trips",
+    "name": "List Historical Trips",
+    "method": "GET",
+    "path": "/trips"
+  },
+  {
+    "category": "Devices",
+    "name": "List Devices",
+    "method": "GET",
+    "path": "/devices"
+  },
+  {
+    "category": "Fault Codes",
+    "name": "List Fault Code Events",
+    "method": "GET",
+    "path": "/fault-codes/events"
+  }
+]

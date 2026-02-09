@@ -1,0 +1,324 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'FleetHub Terminal - Complete Infrastructure (GET Operations)'
+
+Parameters:
+  DomainName:
+    Type: String
+    Default: terminal.rhythminnovations.info
+    Description: Domain name for the application
+  
+  CertificateArn:
+    Type: String
+    Default: arn:aws:acm:us-east-1:205607843743:certificate/d8106ed8-8a41-42e8-bca7-feb915d2cc32
+    Description: ACM Certificate ARN for *.rhythminnovations.info
+  
+  HostedZoneName:
+    Type: String
+    Default: rhythminnovations.info
+    Description: Route53 hosted zone name
+  
+  TerminalSecretKey:
+    Type: String
+    NoEcho: true
+    Description: Terminal API Secret Key (will prompt during deployment)
+
+Resources:
+  # Lambda Execution Role
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: CloudWatchLogs
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: '*'
+
+  # Lambda Function (API Proxy)
+  TerminalProxyFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: fleethub-terminal-proxy
+      Runtime: nodejs18.x
+      Handler: index.handler
+      MemorySize: 512
+      Timeout: 30
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Environment:
+        Variables:
+          TERMINAL_SECRET_KEY: !Ref TerminalSecretKey
+          TERMINAL_BASE_URL: https://api.terminal.co
+      Code:
+        ZipFile: |
+          const https = require('https');
+          
+          exports.handler = async (event) => {
+            console.log('Event:', JSON.stringify(event, null, 2));
+            
+            const headers = {
+              'Access-Control-Allow-Origin': '*',
+              'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+              'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+              'Content-Type': 'application/json'
+            };
+            
+            // Handle OPTIONS (CORS preflight)
+            if (event.requestContext.http.method === 'OPTIONS') {
+              return { statusCode: 200, headers, body: '' };
+            }
+            
+            try {
+              const path = event.rawPath.replace('/api', '');
+              const method = event.requestContext.http.method;
+              const queryString = event.rawQueryString ? `?${event.rawQueryString}` : '';
+              
+              console.log(`Proxying: ${method} ${path}${queryString}`);
+              
+              // For now, return mock data for GET operations
+              if (method === 'GET') {
+                const mockData = getMockData(path);
+                return {
+                  statusCode: 200,
+                  headers,
+                  body: JSON.stringify(mockData)
+                };
+              }
+              
+              return {
+                statusCode: 501,
+                headers,
+                body: JSON.stringify({ error: 'Method not implemented yet' })
+              };
+              
+            } catch (error) {
+              console.error('Error:', error);
+              return {
+                statusCode: 500,
+                headers,
+                body: JSON.stringify({ error: error.message })
+              };
+            }
+          };
+          
+          function getMockData(path) {
+            // Mock data based on endpoint
+            if (path.includes('/drivers')) {
+              return {
+                data: [
+                  { id: 'driver_1', firstName: 'John', lastName: 'Smith', licenseNumber: 'D1234567', licenseState: 'CA', status: 'active' },
+                  { id: 'driver_2', firstName: 'Amanda', lastName: 'Davis', licenseNumber: 'D7654321', licenseState: 'TX', status: 'active' }
+                ],
+                pagination: { hasMore: false }
+              };
+            }
+            
+            if (path.includes('/vehicles')) {
+              return {
+                data: [
+                  { id: 'vehicle_1', name: 'Truck 101', vin: '1HGBH41JXMN109186', make: 'Freightliner', model: 'Cascadia', year: 2022 },
+                  { id: 'vehicle_2', name: 'Truck 102', vin: '1HGBH41JXMN109187', make: 'Kenworth', model: 'T680', year: 2023 }
+                ],
+                pagination: { hasMore: false }
+              };
+            }
+            
+            if (path.includes('/safety/events')) {
+              return {
+                data: [
+                  { id: 'event_1', type: 'harsh_braking', severity: 'moderate', driverId: 'driver_1', vehicleId: 'vehicle_1', timestamp: new Date().toISOString() }
+                ],
+                pagination: { hasMore: false }
+              };
+            }
+            
+            if (path.includes('/hos/available-time')) {
+              return {
+                data: [
+                  { driverId: 'driver_1', driveTimeRemaining: 8.5, shiftTimeRemaining: 10.0, status: 'off_duty' }
+                ]
+              };
+            }
+            
+            return { data: [], message: 'Mock data endpoint' };
+          }
+
+  # API Gateway HTTP API
+  TerminalApiGateway:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: fleethub-terminal-api
+      ProtocolType: HTTP
+      CorsConfiguration:
+        AllowOrigins:
+          - '*'
+        AllowMethods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+        AllowHeaders:
+          - '*'
+        MaxAge: 3600
+
+  # API Gateway Integration
+  ApiIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref TerminalApiGateway
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !GetAtt TerminalProxyFunction.Arn
+      PayloadFormatVersion: '2.0'
+
+  # API Gateway Route (catch-all)
+  ApiRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref TerminalApiGateway
+      RouteKey: '$default'
+      Target: !Sub 'integrations/${ApiIntegration}'
+
+  # API Gateway Stage
+  ApiStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref TerminalApiGateway
+      StageName: '$default'
+      AutoDeploy: true
+
+  # Lambda Permission for API Gateway
+  LambdaApiPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref TerminalProxyFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TerminalApiGateway}/*'
+
+  # S3 Bucket for Frontend
+  FrontendBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${DomainName}-fleethub'
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  # CloudFront Origin Access Control
+  CloudFrontOAC:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub '${DomainName}-oac'
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  # S3 Bucket Policy
+  FrontendBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref FrontendBucket
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Action: s3:GetObject
+            Resource: !Sub '${FrontendBucket.Arn}/*'
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistribution}'
+
+  # CloudFront Distribution
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Aliases:
+          - !Ref DomainName
+        ViewerCertificate:
+          AcmCertificateArn: !Ref CertificateArn
+          SslSupportMethod: sni-only
+          MinimumProtocolVersion: TLSv1.2_2021
+        Origins:
+          - Id: S3Origin
+            DomainName: !GetAtt FrontendBucket.RegionalDomainName
+            OriginAccessControlId: !Ref CloudFrontOAC
+            S3OriginConfig: {}
+        DefaultCacheBehavior:
+          TargetOriginId: S3Origin
+          ViewerProtocolPolicy: redirect-to-https
+          Compress: true
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          CachedMethods:
+            - GET
+            - HEAD
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: none
+        DefaultRootObject: index.html
+        CustomErrorResponses:
+          - ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+          - ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+
+  # Route53 DNS Record
+  DNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneName: !Sub '${HostedZoneName}.'
+      Name: !Ref DomainName
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt CloudFrontDistribution.DomainName
+        HostedZoneId: Z2FDTNDATAQYW2
+
+Outputs:
+  WebsiteURL:
+    Description: Website URL
+    Value: !Sub 'https://${DomainName}'
+    Export:
+      Name: !Sub '${AWS::StackName}-WebsiteURL'
+  
+  ApiProxyEndpoint:
+    Description: API Gateway endpoint
+    Value: !Sub 'https://${TerminalApiGateway}.execute-api.${AWS::Region}.amazonaws.com'
+    Export:
+      Name: !Sub '${AWS::StackName}-ApiEndpoint'
+  
+  CloudFrontDistributionId:
+    Description: CloudFront distribution ID
+    Value: !Ref CloudFrontDistribution
+    Export:
+      Name: !Sub '${AWS::StackName}-DistributionId'
+  
+  S3BucketName:
+    Description: S3 bucket name
+    Value: !Ref FrontendBucket
+    Export:
+      Name: !Sub '${AWS::StackName}-BucketName'

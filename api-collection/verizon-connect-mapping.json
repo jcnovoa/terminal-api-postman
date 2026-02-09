@@ -1,0 +1,32 @@
+[
+  {
+    "verizonConnect": "GET /cmd/v1/drivers",
+    "terminal": "GET /drivers",
+    "status": "REPLACE",
+    "notes": "Terminal provides normalized driver data across all TSPs"
+  },
+  {
+    "verizonConnect": "GET /cmd/v1/vehicles",
+    "terminal": "GET /vehicles",
+    "status": "REPLACE",
+    "notes": "Terminal provides normalized vehicle data"
+  },
+  {
+    "verizonConnect": "POST /rad/v1/vehicles/locations",
+    "terminal": "GET /vehicles/locations/latest",
+    "status": "REPLACE",
+    "notes": "Terminal uses GET instead of POST"
+  },
+  {
+    "verizonConnect": "GET /logbook/v1/driver/{drivernumber}/statuscurrent",
+    "terminal": "GET /hos/available-time",
+    "status": "REPLACE",
+    "notes": "Terminal provides batch endpoint for all drivers"
+  },
+  {
+    "verizonConnect": "GET /da/v1/driversafety/{drivernumber}",
+    "terminal": "GET /safety/events",
+    "status": "REPLACE",
+    "notes": "Terminal provides unified safety event format"
+  }
+]

@@ -1,14 +1,21 @@
 {
-  "name": "@terminal/generate-postman",
+  "name": "terminal-api-integration",
   "version": "1.0.0",
-  "description": "Package to generate Postman workspace for Terminal API",
+  "description": "FleetHub Terminal API Integration - Unified telematics + MVR platform",
+  "main": "scripts/parse-terminal-collection.js",
   "scripts": {
-    "generate": "portman --cliOptionsFile portman-cli.json"
+    "parse": "node scripts/parse-terminal-collection.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "@apideck/portman": "^1.22.0"
-  }
+  "keywords": [
+    "terminal",
+    "telematics",
+    "fleet-management",
+    "sambasafety",
+    "mvr"
+  ],
+  "author": "Rhythm Innovations",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {}
 }

@@ -1,0 +1,20 @@
+[
+  {
+    "terminalEndpoint": "GET /drivers",
+    "sambasafetyEndpoint": "POST /people/v1/people/search",
+    "integrationPoint": "Match drivers by license number",
+    "dataFlow": "Terminal driver → SambaSafety person lookup → MVR reports"
+  },
+  {
+    "terminalEndpoint": "GET /drivers/{id}",
+    "sambasafetyEndpoint": "GET /people/{personId}/mvr-reports",
+    "integrationPoint": "Enrich driver profile with MVR data",
+    "dataFlow": "Terminal driver detail → SambaSafety MVR → Merged profile"
+  },
+  {
+    "terminalEndpoint": "GET /safety/events",
+    "sambasafetyEndpoint": "GET /people/{personId}/mvr-reports",
+    "integrationPoint": "Combine telematics events with MVR violations",
+    "dataFlow": "Terminal safety events + SambaSafety violations → Enhanced risk score"
+  }
+]

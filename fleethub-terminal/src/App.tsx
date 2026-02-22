@@ -24,10 +24,10 @@ function App() {
         terminalAPI.getHOSAvailableTime(),
       ]);
       
-      setDrivers(driversRes.data);
-      setVehicles(vehiclesRes.data);
-      setSafetyEvents(safetyRes.data);
-      setHosStatus(hosRes.data);
+      setDrivers(driversRes.results || []);
+      setVehicles(vehiclesRes.results || []);
+      setSafetyEvents(safetyRes.results || []);
+      setHosStatus(hosRes.results || []);
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
@@ -46,8 +46,9 @@ function App() {
               <h1 className="text-2xl font-bold text-gray-900">FleetHub Terminal</h1>
             </div>
             <div className="flex items-center space-x-2">
-              <Database className="w-5 h-5 text-gray-400" />
-              <span className="text-sm text-gray-500 bg-yellow-100 px-3 py-1 rounded-full">Mock Data</span>
+              <Database className="w-5 h-5 text-green-500" />
+              <span className="text-sm text-gray-700 bg-green-100 px-3 py-1 rounded-full font-medium">Terminal API</span>
+              <span className="text-xs text-gray-500 bg-yellow-50 px-2 py-1 rounded">Sandbox</span>
             </div>
           </div>
         </div>
@@ -146,7 +147,12 @@ function App() {
                               }`} />
                               <div>
                                 <p className="font-medium text-gray-900 capitalize">{event.type.replace('_', ' ')}</p>
-                                <p className="text-sm text-gray-500">Driver: {event.driverId} • Vehicle: {event.vehicleId}</p>
+                                <p className="text-sm text-gray-500">
+                                  {event.driver?.name || 'Unknown Driver'} • {event.vehicle?.name || 'Unknown Vehicle'}
+                                </p>
+                                {event.location?.address && (
+                                  <p className="text-xs text-gray-400 mt-1">{event.location.address}</p>
+                                )}
                               </div>
                             </div>
                             <span className="text-sm text-gray-500">{new Date(event.timestamp).toLocaleString()}</span>
@@ -182,14 +188,19 @@ function App() {
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm font-medium text-gray-900">{driver.firstName} {driver.lastName}</div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{driver.licenseNumber}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{driver.licenseState}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{driver.license.number}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{driver.license.state}</td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`px-2 py-1 text-xs rounded-full ${
-                              driver.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                            }`}>
-                              {driver.status}
-                            </span>
+                            <div className="flex items-center space-x-2">
+                              <span className={`px-2 py-1 text-xs rounded-full ${
+                                driver.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                              }`}>
+                                {driver.status}
+                              </span>
+                              <span className="px-2 py-1 text-xs rounded-full bg-blue-50 text-blue-700">
+                                {driver.provider}
+                              </span>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -249,8 +260,11 @@ function App() {
                           }`} />
                           <div>
                             <h3 className="font-medium text-gray-900 capitalize">{event.type.replace('_', ' ')}</h3>
-                            <p className="text-sm text-gray-500 mt-1">Driver: {event.driverId}</p>
-                            <p className="text-sm text-gray-500">Vehicle: {event.vehicleId}</p>
+                            <p className="text-sm text-gray-500 mt-1">Driver: {event.driver?.name || 'Unknown'}</p>
+                            <p className="text-sm text-gray-500">Vehicle: {event.vehicle?.name || 'Unknown'}</p>
+                            {event.location?.address && (
+                              <p className="text-xs text-gray-400 mt-1">{event.location.address}</p>
+                            )}
                             <p className="text-sm text-gray-500 mt-2">{new Date(event.timestamp).toLocaleString()}</p>
                           </div>
                         </div>
@@ -286,10 +300,14 @@ function App() {
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {hosStatus.map((hos) => (
-                        <tr key={hos.driverId} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{hos.driverId}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{hos.driveTimeRemaining.toFixed(1)}h</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{hos.shiftTimeRemaining.toFixed(1)}h</td>
+                        <tr key={hos.id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{hos.driver.name}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {hos.availableTime?.drive?.toFixed(1) || 'N/A'}h
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {hos.availableTime?.shift?.toFixed(1) || 'N/A'}h
+                          </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`px-2 py-1 text-xs rounded-full capitalize ${
                               hos.status === 'driving' ? 'bg-green-100 text-green-800' :

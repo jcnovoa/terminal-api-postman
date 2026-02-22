@@ -21,6 +21,11 @@ Parameters:
     Type: String
     NoEcho: true
     Description: Terminal API Secret Key (will prompt during deployment)
+  
+  ConnectionToken:
+    Type: String
+    NoEcho: true
+    Description: Terminal Connection Token (will prompt during deployment)
 
 Resources:
   # Lambda Execution Role
@@ -61,10 +66,15 @@ Resources:
       Environment:
         Variables:
           TERMINAL_SECRET_KEY: !Ref TerminalSecretKey
-          TERMINAL_BASE_URL: https://api.terminal.co
+          CONNECTION_TOKEN: !Ref ConnectionToken
+          TERMINAL_BASE_URL: https://api.sandbox.withterminal.com
       Code:
         ZipFile: |
           const https = require('https');
+          
+          const TERMINAL_SECRET_KEY = process.env.TERMINAL_SECRET_KEY;
+          const CONNECTION_TOKEN = process.env.CONNECTION_TOKEN;
+          const BASE_URL = 'api.sandbox.withterminal.com';
           
           exports.handler = async (event) => {
             console.log('Event:', JSON.stringify(event, null, 2));
@@ -76,7 +86,6 @@ Resources:
               'Content-Type': 'application/json'
             };
             
-            // Handle OPTIONS (CORS preflight)
             if (event.requestContext.http.method === 'OPTIONS') {
               return { statusCode: 200, headers, body: '' };
             }
@@ -88,13 +97,12 @@ Resources:
               
               console.log(`Proxying: ${method} ${path}${queryString}`);
               
-              // For now, return mock data for GET operations
               if (method === 'GET') {
-                const mockData = getMockData(path);
+                const data = await callTerminalAPI(path + queryString);
                 return {
                   statusCode: 200,
                   headers,
-                  body: JSON.stringify(mockData)
+                  body: JSON.stringify(data)
                 };
               }
               
@@ -114,46 +122,34 @@ Resources:
             }
           };
           
-          function getMockData(path) {
-            // Mock data based on endpoint
-            if (path.includes('/drivers')) {
-              return {
-                data: [
-                  { id: 'driver_1', firstName: 'John', lastName: 'Smith', licenseNumber: 'D1234567', licenseState: 'CA', status: 'active' },
-                  { id: 'driver_2', firstName: 'Amanda', lastName: 'Davis', licenseNumber: 'D7654321', licenseState: 'TX', status: 'active' }
-                ],
-                pagination: { hasMore: false }
+          function callTerminalAPI(path) {
+            return new Promise((resolve, reject) => {
+              const options = {
+                hostname: BASE_URL,
+                path: `/tsp/v1${path}`,
+                method: 'GET',
+                headers: {
+                  'Authorization': `Bearer ${TERMINAL_SECRET_KEY}`,
+                  'Connection-Token': CONNECTION_TOKEN,
+                  'Accept': 'application/json'
+                }
               };
-            }
-            
-            if (path.includes('/vehicles')) {
-              return {
-                data: [
-                  { id: 'vehicle_1', name: 'Truck 101', vin: '1HGBH41JXMN109186', make: 'Freightliner', model: 'Cascadia', year: 2022 },
-                  { id: 'vehicle_2', name: 'Truck 102', vin: '1HGBH41JXMN109187', make: 'Kenworth', model: 'T680', year: 2023 }
-                ],
-                pagination: { hasMore: false }
-              };
-            }
-            
-            if (path.includes('/safety/events')) {
-              return {
-                data: [
-                  { id: 'event_1', type: 'harsh_braking', severity: 'moderate', driverId: 'driver_1', vehicleId: 'vehicle_1', timestamp: new Date().toISOString() }
-                ],
-                pagination: { hasMore: false }
-              };
-            }
-            
-            if (path.includes('/hos/available-time')) {
-              return {
-                data: [
-                  { driverId: 'driver_1', driveTimeRemaining: 8.5, shiftTimeRemaining: 10.0, status: 'off_duty' }
-                ]
-              };
-            }
-            
-            return { data: [], message: 'Mock data endpoint' };
+              
+              const req = https.request(options, (res) => {
+                let data = '';
+                res.on('data', (chunk) => data += chunk);
+                res.on('end', () => {
+                  try {
+                    resolve(JSON.parse(data));
+                  } catch (e) {
+                    reject(new Error('Invalid JSON response'));
+                  }
+                });
+              });
+              
+              req.on('error', reject);
+              req.end();
+            });
           }
 
   # API Gateway HTTP API

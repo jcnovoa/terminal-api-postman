@@ -28,7 +28,9 @@ if aws cloudformation describe-stacks \
   aws cloudformation update-stack \
     --stack-name $STACK_NAME \
     --template-body file://$TEMPLATE \
-    --parameters ParameterKey=TerminalSecretKey,UsePreviousValue=true \
+    --parameters \
+      ParameterKey=TerminalSecretKey,ParameterValue=sk_sandbox_Cffv94cF6htJWR3neaTcugYPztedgk6A \
+      ParameterKey=ConnectionToken,ParameterValue=con_tkn_CndKiCmKFkJiWiT37cDVmuuQFUBEp4wF \
     --capabilities CAPABILITY_IAM \
     --profile $PROFILE \
     --region $REGION
@@ -44,17 +46,16 @@ if aws cloudformation describe-stacks \
 else
   
   echo -e "${YELLOW}Stack does not exist. Creating...${NC}"
-  read -sp "Enter Terminal Secret Key (or press Enter to use 'demo-key' for testing): " TERMINAL_KEY
-  echo ""
   
-  if [ -z "$TERMINAL_KEY" ]; then
-    TERMINAL_KEY="demo-key-for-testing"
-  fi
+  TERMINAL_KEY="sk_sandbox_Cffv94cF6htJWR3neaTcugYPztedgk6A"
+  CONNECTION_TOKEN="con_tkn_CndKiCmKFkJiWiT37cDVmuuQFUBEp4wF"
   
   aws cloudformation create-stack \
     --stack-name $STACK_NAME \
     --template-body file://$TEMPLATE \
-    --parameters ParameterKey=TerminalSecretKey,ParameterValue=$TERMINAL_KEY \
+    --parameters \
+      ParameterKey=TerminalSecretKey,ParameterValue=$TERMINAL_KEY \
+      ParameterKey=ConnectionToken,ParameterValue=$CONNECTION_TOKEN \
     --capabilities CAPABILITY_IAM \
     --profile $PROFILE \
     --region $REGION

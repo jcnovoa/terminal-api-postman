@@ -34,6 +34,7 @@ interface Vehicle {
 interface VehicleMapProps {
   locations: VehicleLocation[];
   vehicles: Vehicle[];
+  center?: { lat: number; lng: number } | null;
 }
 
 const MapController = ({ center }: { center?: [number, number] }) => {
@@ -41,20 +42,24 @@ const MapController = ({ center }: { center?: [number, number] }) => {
   
   useEffect(() => {
     if (center) {
-      map.setView(center, 10);
+      map.setView(center, 15);
     }
   }, [center, map]);
   
   return null;
 };
 
-export const VehicleMap = ({ locations, vehicles }: VehicleMapProps) => {
-  const center: [number, number] = locations.length > 0
+export const VehicleMap = ({ locations, vehicles, center: externalCenter }: VehicleMapProps) => {
+  const defaultCenter: [number, number] = locations.length > 0
     ? [
         locations.reduce((sum, l) => sum + l.location.latitude, 0) / locations.length,
         locations.reduce((sum, l) => sum + l.location.longitude, 0) / locations.length
       ]
     : [39.8283, -98.5795];
+
+  const center: [number, number] = externalCenter 
+    ? [externalCenter.lat, externalCenter.lng]
+    : defaultCenter;
 
   const zoom = locations.length > 0 ? 10 : 4;
 

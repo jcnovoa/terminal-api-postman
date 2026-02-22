@@ -17,6 +17,12 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
 
+  // Navigation state
+  const [selectedDriver, setSelectedDriver] = useState<string | null>(null);
+  const [selectedVehicle, setSelectedVehicle] = useState<string | null>(null);
+  const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
+  const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number } | null>(null);
+
   // API Playground state
   const [apiRequest, setApiRequest] = useState({
     method: 'GET',
@@ -82,10 +88,28 @@ function App() {
         terminalAPI.getTrailers(),
       ]);
       
-      setDrivers(driversRes.results || []);
-      setVehicles(vehiclesRes.results || []);
+      const driversData = driversRes.results || [];
+      const vehiclesData = vehiclesRes.results || [];
+      const safetyData = safetyRes.results || [];
+
+      // Enrich safety events with driver/vehicle names
+      const enrichedSafety = safetyData.map(event => {
+        const driverId = typeof event.driver === 'string' ? event.driver : event.driver?.id;
+        const vehicleId = typeof event.vehicle === 'string' ? event.vehicle : event.vehicle?.id;
+        const driver = driversData.find(d => d.id === driverId);
+        const vehicle = vehiclesData.find(v => v.id === vehicleId);
+        
+        return {
+          ...event,
+          driver: driverId ? { id: driverId, name: driver ? `${driver.firstName} ${driver.lastName}` : 'Unknown' } : undefined,
+          vehicle: vehicleId ? { id: vehicleId, name: vehicle?.name || 'Unknown' } : undefined
+        };
+      });
+      
+      setDrivers(driversData);
+      setVehicles(vehiclesData);
       setVehicleLocations(locationsRes.results || []);
-      setSafetyEvents(safetyRes.results || []);
+      setSafetyEvents(enrichedSafety);
       setHosStatus(hosRes.results || []);
       setConnections(connectionsRes.results || []);
       setGroups(groupsRes.results || []);
@@ -153,7 +177,10 @@ function App() {
               <div className="space-y-6">
                 {/* KPI Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                  <div className="bg-white rounded-lg shadow p-6">
+                  <button
+                    onClick={() => setActiveTab('drivers')}
+                    className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow cursor-pointer text-left"
+                  >
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm text-gray-600">Total Drivers</p>
@@ -161,9 +188,12 @@ function App() {
                       </div>
                       <Users className="w-12 h-12 text-blue-500" />
                     </div>
-                  </div>
+                  </button>
 
-                  <div className="bg-white rounded-lg shadow p-6">
+                  <button
+                    onClick={() => setActiveTab('vehicles')}
+                    className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow cursor-pointer text-left"
+                  >
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm text-gray-600">Total Vehicles</p>
@@ -171,9 +201,12 @@ function App() {
                       </div>
                       <Truck className="w-12 h-12 text-green-500" />
                     </div>
-                  </div>
+                  </button>
 
-                  <div className="bg-white rounded-lg shadow p-6">
+                  <button
+                    onClick={() => setActiveTab('safety')}
+                    className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow cursor-pointer text-left"
+                  >
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm text-gray-600">Safety Events</p>
@@ -181,9 +214,12 @@ function App() {
                       </div>
                       <AlertTriangle className="w-12 h-12 text-yellow-500" />
                     </div>
-                  </div>
+                  </button>
 
-                  <div className="bg-white rounded-lg shadow p-6">
+                  <button
+                    onClick={() => setActiveTab('hos')}
+                    className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow cursor-pointer text-left"
+                  >
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm text-gray-600">HOS Tracked</p>
@@ -191,7 +227,7 @@ function App() {
                       </div>
                       <Clock className="w-12 h-12 text-purple-500" />
                     </div>
-                  </div>
+                  </button>
                 </div>
 
                 {/* Recent Activity */}
@@ -203,7 +239,7 @@ function App() {
                     {safetyEvents.length > 0 ? (
                       <div className="space-y-4">
                         {safetyEvents.map((event) => (
-                          <div key={event.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                          <div key={event.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                             <div className="flex items-center space-x-4">
                               <AlertTriangle className={`w-6 h-6 ${
                                 event.severity === 'critical' ? 'text-red-500' :
@@ -213,9 +249,43 @@ function App() {
                               }`} />
                               <div>
                                 <p className="font-medium text-gray-900 capitalize">{event.type.replace('_', ' ')}</p>
-                                <p className="text-sm text-gray-500">
-                                  {event.driver?.name || 'Unknown Driver'} • {event.vehicle?.name || 'Unknown Vehicle'}
-                                </p>
+                                <div className="flex items-center space-x-2 text-sm text-gray-500">
+                                  <button
+                                    onClick={() => {
+                                      setSelectedDriver(event.driver?.id || null);
+                                      setActiveTab('drivers');
+                                    }}
+                                    className="text-blue-600 hover:underline"
+                                  >
+                                    {event.driver?.name || 'Unknown Driver'}
+                                  </button>
+                                  <span>•</span>
+                                  <button
+                                    onClick={() => {
+                                      setSelectedVehicle(event.vehicle?.id || null);
+                                      setActiveTab('vehicles');
+                                    }}
+                                    className="text-blue-600 hover:underline"
+                                  >
+                                    {event.vehicle?.name || 'Unknown Vehicle'}
+                                  </button>
+                                  {event.location?.latitude && event.location?.longitude && (
+                                    <>
+                                      <span>•</span>
+                                      <button
+                                        onClick={() => {
+                                          if (event.location) {
+                                            setMapCenter({ lat: event.location.latitude, lng: event.location.longitude });
+                                            setActiveTab('map');
+                                          }
+                                        }}
+                                        className="text-blue-600 hover:underline"
+                                      >
+                                        View on Map
+                                      </button>
+                                    </>
+                                  )}
+                                </div>
                                 {event.location?.address && (
                                   <p className="text-xs text-gray-400 mt-1">{event.location.address}</p>
                                 )}
@@ -234,18 +304,84 @@ function App() {
             )}
 
             {activeTab === 'map' && (
-              <div className="bg-white rounded-lg shadow p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Live Operations</h2>
-                <div className="h-[600px]">
-                  <VehicleMap locations={vehicleLocations} vehicles={vehicles} />
+              <div className="bg-white rounded-lg shadow overflow-hidden">
+                <div className="flex h-[calc(100vh-200px)]">
+                  {/* Sidebar */}
+                  <div className="w-80 border-r border-gray-200 overflow-y-auto">
+                    <div className="p-4 border-b border-gray-200 bg-gray-50">
+                      <h3 className="font-semibold text-gray-700">Vehicles ({vehicles.length})</h3>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {vehicleLocations.length} with location data
+                      </p>
+                    </div>
+                    <div className="divide-y divide-gray-100">
+                      {vehicles.map(vehicle => {
+                        const location = vehicleLocations.find(loc => loc.vehicle === vehicle.id);
+                        return (
+                          <div
+                            key={vehicle.id}
+                            className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors ${
+                              selectedVehicle === vehicle.id ? 'bg-blue-50 border-l-4 border-blue-600' : ''
+                            }`}
+                            onClick={() => {
+                              setSelectedVehicle(vehicle.id);
+                              if (location) {
+                                setMapCenter({ lat: location.location.latitude, lng: location.location.longitude });
+                              }
+                            }}
+                          >
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <h4 className="font-medium text-gray-900">{vehicle.name}</h4>
+                                <p className="text-sm text-gray-500">{vehicle.make} {vehicle.model} ({vehicle.year})</p>
+                                {location && (
+                                  <>
+                                    <p className="text-xs text-gray-400 mt-1">
+                                      {location.engineState || 'Unknown'} • {location.speed || 0} km/h
+                                    </p>
+                                    {location.address?.formatted && (
+                                      <p className="text-xs text-gray-400 mt-1">{location.address.formatted}</p>
+                                    )}
+                                  </>
+                                )}
+                              </div>
+                              <Truck className="w-5 h-5 text-gray-400" />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  {/* Map */}
+                  <div className="flex-1">
+                    <VehicleMap locations={vehicleLocations} vehicles={vehicles} center={mapCenter} />
+                  </div>
                 </div>
               </div>
             )}
 
             {activeTab === 'drivers' && (
               <div className="bg-white rounded-lg shadow">
-                <div className="px-6 py-4 border-b">
-                  <h2 className="text-lg font-semibold text-gray-900">Drivers ({drivers.length})</h2>
+                <div className="px-6 py-4 border-b flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-semibold text-gray-900">Drivers ({drivers.filter(d => !selectedGroup || d.groups?.includes(selectedGroup)).length})</h2>
+                    {selectedGroup && (
+                      <p className="text-sm text-gray-500 mt-1">
+                        Filtered by group: {groups.find(g => g.id === selectedGroup)?.name}
+                      </p>
+                    )}
+                  </div>
+                  {(selectedDriver || selectedGroup) && (
+                    <button
+                      onClick={() => {
+                        setSelectedDriver(null);
+                        setSelectedGroup(null);
+                      }}
+                      className="text-sm text-blue-600 hover:text-blue-700"
+                    >
+                      Clear Selection
+                    </button>
+                  )}
                 </div>
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
@@ -255,11 +391,21 @@ function App() {
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">License</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">State</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {drivers.map((driver) => (
-                        <tr key={driver.id} className="hover:bg-gray-50">
+                      {drivers
+                        .filter(d => !selectedGroup || d.groups?.includes(selectedGroup))
+                        .map((driver) => (
+                        <tr
+                          key={driver.id}
+                          className={`${
+                            selectedDriver === driver.id
+                              ? 'bg-blue-50 border-l-4 border-blue-600'
+                              : 'hover:bg-gray-50'
+                          }`}
+                        >
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm font-medium text-gray-900">{driver.firstName} {driver.lastName}</div>
                           </td>
@@ -277,6 +423,17 @@ function App() {
                               </span>
                             </div>
                           </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <button
+                              onClick={() => {
+                                setSelectedDriver(driver.id);
+                                setActiveTab('safety');
+                              }}
+                              className="text-blue-600 hover:underline"
+                            >
+                              View Safety
+                            </button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -287,8 +444,26 @@ function App() {
 
             {activeTab === 'vehicles' && (
               <div className="bg-white rounded-lg shadow">
-                <div className="px-6 py-4 border-b">
-                  <h2 className="text-lg font-semibold text-gray-900">Vehicles ({vehicles.length})</h2>
+                <div className="px-6 py-4 border-b flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-semibold text-gray-900">Vehicles ({vehicles.filter(v => !selectedGroup || v.groups?.includes(selectedGroup)).length})</h2>
+                    {selectedGroup && (
+                      <p className="text-sm text-gray-500 mt-1">
+                        Filtered by group: {groups.find(g => g.id === selectedGroup)?.name}
+                      </p>
+                    )}
+                  </div>
+                  {(selectedVehicle || selectedGroup) && (
+                    <button
+                      onClick={() => {
+                        setSelectedVehicle(null);
+                        setSelectedGroup(null);
+                      }}
+                      className="text-sm text-blue-600 hover:text-blue-700"
+                    >
+                      Clear Selection
+                    </button>
+                  )}
                 </div>
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
@@ -298,19 +473,46 @@ function App() {
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Make/Model</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Year</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">VIN</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {vehicles.map((vehicle) => (
-                        <tr key={vehicle.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium text-gray-900">{vehicle.name}</div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{vehicle.make} {vehicle.model}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{vehicle.year}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">{vehicle.vin}</td>
-                        </tr>
-                      ))}
+                      {vehicles
+                        .filter(v => !selectedGroup || v.groups?.includes(selectedGroup))
+                        .map((vehicle) => {
+                        const location = vehicleLocations.find(loc => loc.vehicle === vehicle.id);
+                        return (
+                          <tr
+                            key={vehicle.id}
+                            className={`${
+                              selectedVehicle === vehicle.id
+                                ? 'bg-blue-50 border-l-4 border-blue-600'
+                                : 'hover:bg-gray-50'
+                            }`}
+                          >
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm font-medium text-gray-900">{vehicle.name}</div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{vehicle.make} {vehicle.model}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{vehicle.year}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">{vehicle.vin}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                              {location && (
+                                <button
+                                  onClick={() => {
+                                    setMapCenter({ lat: location.location.latitude, lng: location.location.longitude });
+                                    setSelectedVehicle(vehicle.id);
+                                    setActiveTab('map');
+                                  }}
+                                  className="text-blue-600 hover:underline"
+                                >
+                                  View on Map
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -321,7 +523,7 @@ function App() {
               <div className="bg-white rounded-lg shadow">
                 <div className="px-6 py-4 border-b">
                   <h2 className="text-lg font-semibold text-gray-900">Groups ({groups.length})</h2>
-                  <p className="text-sm text-gray-500 mt-1">Fleet organization groups</p>
+                  <p className="text-sm text-gray-500 mt-1">Fleet organization groups - Click to view members</p>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
@@ -330,20 +532,46 @@ function App() {
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Group ID</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Provider</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Members</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {groups.map((group) => (
-                        <tr key={group.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{group.name}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">{group.sourceId}</td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="px-2 py-1 text-xs rounded-full bg-blue-50 text-blue-700">
-                              {group.provider}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
+                      {groups.map((group) => {
+                        const groupDrivers = drivers.filter(d => d.groups?.includes(group.id));
+                        const groupVehicles = vehicles.filter(v => v.groups?.includes(group.id));
+                        return (
+                          <tr key={group.id} className="hover:bg-gray-50">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{group.name}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">{group.sourceId}</td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className="px-2 py-1 text-xs rounded-full bg-blue-50 text-blue-700">
+                                {group.provider}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm space-x-2">
+                              <button
+                                onClick={() => {
+                                  setSelectedGroup(group.id);
+                                  setActiveTab('drivers');
+                                }}
+                                className="text-blue-600 hover:underline"
+                              >
+                                {groupDrivers.length} Drivers
+                              </button>
+                              <span className="text-gray-400">•</span>
+                              <button
+                                onClick={() => {
+                                  setSelectedGroup(group.id);
+                                  setActiveTab('vehicles');
+                                }}
+                                className="text-blue-600 hover:underline"
+                              >
+                                {groupVehicles.length} Vehicles
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -532,12 +760,29 @@ function App() {
 
             {activeTab === 'safety' && (
               <div className="bg-white rounded-lg shadow">
-                <div className="px-6 py-4 border-b">
+                <div className="px-6 py-4 border-b flex items-center justify-between">
                   <h2 className="text-lg font-semibold text-gray-900">Safety Events ({safetyEvents.length})</h2>
+                  {(selectedDriver || selectedVehicle) && (
+                    <button
+                      onClick={() => {
+                        setSelectedDriver(null);
+                        setSelectedVehicle(null);
+                      }}
+                      className="text-sm text-blue-600 hover:text-blue-700"
+                    >
+                      Show All Events
+                    </button>
+                  )}
                 </div>
                 <div className="p-6 space-y-4">
-                  {safetyEvents.map((event) => (
-                    <div key={event.id} className="border rounded-lg p-4">
+                  {safetyEvents
+                    .filter(event => {
+                      if (selectedDriver) return event.driver?.id === selectedDriver;
+                      if (selectedVehicle) return event.vehicle?.id === selectedVehicle;
+                      return true;
+                    })
+                    .map((event) => (
+                    <div key={event.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
                       <div className="flex items-start justify-between">
                         <div className="flex items-start space-x-4">
                           <AlertTriangle className={`w-6 h-6 mt-1 ${
@@ -548,10 +793,45 @@ function App() {
                           }`} />
                           <div>
                             <h3 className="font-medium text-gray-900 capitalize">{event.type.replace('_', ' ')}</h3>
-                            <p className="text-sm text-gray-500 mt-1">Driver: {event.driver?.name || 'Unknown'}</p>
-                            <p className="text-sm text-gray-500">Vehicle: {event.vehicle?.name || 'Unknown'}</p>
+                            <div className="flex items-center space-x-2 text-sm text-gray-500 mt-1">
+                              <span>Driver:</span>
+                              <button
+                                onClick={() => {
+                                  setSelectedDriver(event.driver?.id || null);
+                                  setActiveTab('drivers');
+                                }}
+                                className="text-blue-600 hover:underline"
+                              >
+                                {event.driver?.name || 'Unknown'}
+                              </button>
+                            </div>
+                            <div className="flex items-center space-x-2 text-sm text-gray-500">
+                              <span>Vehicle:</span>
+                              <button
+                                onClick={() => {
+                                  setSelectedVehicle(event.vehicle?.id || null);
+                                  setActiveTab('vehicles');
+                                }}
+                                className="text-blue-600 hover:underline"
+                              >
+                                {event.vehicle?.name || 'Unknown'}
+                              </button>
+                            </div>
                             {event.location?.address && (
                               <p className="text-xs text-gray-400 mt-1">{event.location.address}</p>
+                            )}
+                            {event.location?.latitude && event.location?.longitude && (
+                              <button
+                                onClick={() => {
+                                  if (event.location) {
+                                    setMapCenter({ lat: event.location.latitude, lng: event.location.longitude });
+                                    setActiveTab('map');
+                                  }
+                                }}
+                                className="text-xs text-blue-600 hover:underline mt-1"
+                              >
+                                View on Map
+                              </button>
                             )}
                             <p className="text-sm text-gray-500 mt-2">{new Date(event.timestamp).toLocaleString()}</p>
                           </div>

@@ -1,4 +1,4 @@
-import type { Driver, Vehicle, VehicleLocation, SafetyEvent, HOSStatus, Connection, APIResponse } from '../types/terminal';
+import type { Driver, Vehicle, VehicleLocation, SafetyEvent, HOSStatus, Connection, Group, Trailer, APIResponse } from '../types/terminal';
 
 const API_BASE_URL = 'https://wer6tsu3ul.execute-api.us-east-1.amazonaws.com/api';
 
@@ -15,22 +15,10 @@ export const terminalAPI = {
     return response.json();
   },
 
-  getDriver: async (id: string): Promise<Driver> => {
-    const response = await fetch(`${API_BASE_URL}/drivers/${id}`);
-    const data = await response.json();
-    return data.data;
-  },
-
   // Vehicles
   getVehicles: async (): Promise<APIResponse<Vehicle>> => {
     const response = await fetch(`${API_BASE_URL}/vehicles`);
     return response.json();
-  },
-
-  getVehicle: async (id: string): Promise<Vehicle> => {
-    const response = await fetch(`${API_BASE_URL}/vehicles/${id}`);
-    const data = await response.json();
-    return data.data;
   },
 
   getVehicleLocations: async (): Promise<APIResponse<VehicleLocation>> => {
@@ -47,6 +35,18 @@ export const terminalAPI = {
   // Hours of Service
   getHOSAvailableTime: async (): Promise<APIResponse<HOSStatus>> => {
     const response = await fetch(`${API_BASE_URL}/hos/available-time`);
+    return response.json();
+  },
+
+  // Groups
+  getGroups: async (): Promise<APIResponse<Group>> => {
+    const response = await fetch(`${API_BASE_URL}/groups`);
+    return response.json();
+  },
+
+  // Trailers
+  getTrailers: async (): Promise<APIResponse<Trailer>> => {
+    const response = await fetch(`${API_BASE_URL}/trailers`);
     return response.json();
   },
 };

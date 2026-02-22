@@ -47,17 +47,27 @@ export interface Vehicle {
 }
 
 export interface VehicleLocation {
-  vehicle: {
-    id: string;
-    name: string;
+  provider: string;
+  vehicle: string;
+  driver?: string;
+  heading?: number;
+  speed?: number;
+  odometer?: number;
+  engineState?: string;
+  locatedAt: string;
+  address?: {
+    formatted: string;
   };
   location: {
     latitude: number;
     longitude: number;
-    speed?: number;
-    heading?: number;
-    address?: string;
-    recordedAt: string;
+  };
+  fuel?: {
+    primaryPercentage?: number;
+  };
+  metadata: {
+    addedAt: string;
+    modifiedAt: string;
   };
 }
 
@@ -111,6 +121,37 @@ export interface Connection {
   };
   createdAt: string;
   updatedAt: string;
+}
+
+export interface Group {
+  id: string;
+  name: string;
+  sourceId: string;
+  provider: string;
+  metadata: {
+    addedAt: string;
+    modifiedAt: string;
+  };
+}
+
+export interface Trailer {
+  id: string;
+  name: string;
+  status: string;
+  sourceId: string;
+  provider: string;
+  make?: string;
+  model?: string;
+  vin?: string;
+  year?: number;
+  licensePlate?: {
+    number: string;
+    state: string;
+  };
+  metadata: {
+    addedAt: string;
+    modifiedAt: string;
+  };
 }
 
 export interface APIResponse<T> {

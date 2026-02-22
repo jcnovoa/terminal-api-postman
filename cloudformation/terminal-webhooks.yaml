@@ -1,0 +1,239 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Terminal Webhook Infrastructure'
+
+Parameters:
+  TerminalSecretKey:
+    Type: String
+    NoEcho: true
+    Description: Terminal Secret Key
+
+Resources:
+  # DynamoDB Tables
+  VehicleEventsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: fleethub-terminal-vehicle-events
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: timestamp
+          AttributeType: N
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+        - AttributeName: timestamp
+          KeyType: RANGE
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+
+  SafetyEventsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: fleethub-terminal-safety-events
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: timestamp
+          AttributeType: N
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+        - AttributeName: timestamp
+          KeyType: RANGE
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+
+  # Lambda Execution Role
+  WebhookLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: DynamoDBAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                Resource:
+                  - !GetAtt VehicleEventsTable.Arn
+                  - !GetAtt SafetyEventsTable.Arn
+
+  # Lambda Function
+  WebhookHandler:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: fleethub-terminal-webhooks
+      Runtime: nodejs18.x
+      Handler: index.handler
+      Role: !GetAtt WebhookLambdaRole.Arn
+      Timeout: 30
+      Environment:
+        Variables:
+          VEHICLE_EVENTS_TABLE: !Ref VehicleEventsTable
+          SAFETY_EVENTS_TABLE: !Ref SafetyEventsTable
+      Code:
+        ZipFile: |
+          const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
+          const { DynamoDBDocumentClient, PutCommand, QueryCommand } = require('@aws-sdk/lib-dynamodb');
+          
+          const client = new DynamoDBClient({});
+          const ddb = DynamoDBDocumentClient.from(client);
+          
+          exports.handler = async (event) => {
+            console.log('Webhook received:', JSON.stringify(event, null, 2));
+            
+            const headers = {
+              'Access-Control-Allow-Origin': '*',
+              'Access-Control-Allow-Headers': 'Content-Type',
+              'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+              'Content-Type': 'application/json'
+            };
+            
+            if (event.requestContext.http.method === 'OPTIONS') {
+              return { statusCode: 200, headers, body: '' };
+            }
+            
+            try {
+              const path = event.rawPath;
+              const method = event.requestContext.http.method;
+              
+              // Handle webhook POST
+              if (method === 'POST' && path === '/webhooks/terminal') {
+                const payload = JSON.parse(event.body);
+                const eventType = payload.type;
+                
+                const timestamp = Date.now();
+                const ttl = Math.floor(Date.now() / 1000) + (90 * 24 * 60 * 60); // 90 days
+                
+                // Route to appropriate table
+                if (eventType.startsWith('vehicle.') || eventType.startsWith('driver.')) {
+                  await ddb.send(new PutCommand({
+                    TableName: process.env.VEHICLE_EVENTS_TABLE,
+                    Item: {
+                      id: payload.id,
+                      timestamp,
+                      ttl,
+                      type: eventType,
+                      data: payload
+                    }
+                  }));
+                } else if (eventType.startsWith('safety_event.')) {
+                  await ddb.send(new PutCommand({
+                    TableName: process.env.SAFETY_EVENTS_TABLE,
+                    Item: {
+                      id: payload.id,
+                      timestamp,
+                      ttl,
+                      type: eventType,
+                      data: payload
+                    }
+                  }));
+                }
+                
+                return {
+                  statusCode: 200,
+                  headers,
+                  body: JSON.stringify({ received: true })
+                };
+              }
+              
+              // Handle query GET
+              if (method === 'GET' && path.startsWith('/webhooks/')) {
+                const table = path.includes('safety') 
+                  ? process.env.SAFETY_EVENTS_TABLE 
+                  : process.env.VEHICLE_EVENTS_TABLE;
+                
+                const result = await ddb.send(new QueryCommand({
+                  TableName: table,
+                  Limit: 100,
+                  ScanIndexForward: false
+                }));
+                
+                return {
+                  statusCode: 200,
+                  headers,
+                  body: JSON.stringify(result.Items || [])
+                };
+              }
+              
+              return {
+                statusCode: 404,
+                headers,
+                body: JSON.stringify({ error: 'Not found' })
+              };
+              
+            } catch (error) {
+              console.error('Error:', error);
+              return {
+                statusCode: 500,
+                headers,
+                body: JSON.stringify({ error: error.message })
+              };
+            }
+          };
+
+  # API Gateway
+  WebhookApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: fleethub-terminal-webhooks
+      ProtocolType: HTTP
+      CorsConfiguration:
+        AllowOrigins: ['*']
+        AllowMethods: ['GET', 'POST', 'OPTIONS']
+        AllowHeaders: ['*']
+
+  ApiIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref WebhookApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !GetAtt WebhookHandler.Arn
+      PayloadFormatVersion: '2.0'
+
+  ApiRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref WebhookApi
+      RouteKey: '$default'
+      Target: !Sub 'integrations/${ApiIntegration}'
+
+  ApiStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref WebhookApi
+      StageName: '$default'
+      AutoDeploy: true
+
+  LambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref WebhookHandler
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WebhookApi}/*'
+
+Outputs:
+  WebhookUrl:
+    Value: !Sub 'https://${WebhookApi}.execute-api.${AWS::Region}.amazonaws.com/webhooks/terminal'
+    Description: Terminal Webhook URL
+  
+  QueryUrl:
+    Value: !Sub 'https://${WebhookApi}.execute-api.${AWS::Region}.amazonaws.com/webhooks/events'
+    Description: Query events URL
